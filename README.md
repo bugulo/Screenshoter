@@ -1,2 +1,2 @@
 # Screenshoter
-Companion for taking screenshots of your favourite places.
+Companion for taking screenshots of your favourite places in Azeroth.
