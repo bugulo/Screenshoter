@@ -1,0 +1,8 @@
+## Interface: 70100
+## Title: Screenshoter
+## Author: UareBugged
+## Version: 1.0.0
+## SavedVariables: SCR_CVARS
+## SavedVariables: SCR_OTHER
+
+Screenshoter.lua

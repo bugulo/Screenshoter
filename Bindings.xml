@@ -1,0 +1,5 @@
+<Bindings>
+ <Binding name="SCREENSHOTER_TAKE" header="SCREENSHOTER" category="Screenshoter">
+   TakeScreenshot();
+ </Binding>
+</Bindings>
