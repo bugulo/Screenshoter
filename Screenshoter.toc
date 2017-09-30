@@ -1,7 +1,7 @@
-## Interface: 70200
+## Interface: 70300
 ## Title: Screenshoter
 ## Author: UareBugged
-## Version: 1.0.1
+## Version: 1.0.2
 ## SavedVariables: SCR_CVARS
 ## SavedVariables: SCR_OTHER
 
