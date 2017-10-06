@@ -8,6 +8,8 @@ local window = CreateFrame("FRAME", "EventFrame");
 local events = {}
 local settings = {}
 
+local isScreenshoting = false
+
 local cvars = {
     --FRIENDLY NAMES
     {
@@ -190,11 +192,13 @@ end
 
 
 function TakeScreenshot()
-	if SCR_QUALITY.enabled
-	then
-		HideUI()
-		Screenshot()
-	end
+    if not isScreenshoting then
+        isScreenshoting = true
+        if SCR_QUALITY.enabled then
+            HideUI()
+            Screenshot()
+        end
+    end
 end
 
 function HideUI()
@@ -214,7 +218,10 @@ function ShowUI()
         SetCVar(cvars[key].key, value, cvars[key].key)
     end
 
-	if SCR_QUALITY.hideui then ToggleFrame(UIParent) end
+	if SCR_QUALITY.hideui and isScreenshoting then
+        ToggleFrame(UIParent)
+        isScreenshoting = false
+    end
 end
 
 for k in pairs(events) do
