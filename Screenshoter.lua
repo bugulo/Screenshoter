@@ -1,5 +1,6 @@
 BINDING_HEADER_SCREENSHOT = "Screenshoter"
 BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
+BINDING_NAME_SCREENSHOTER_TAKE_MAXIMIZER = "Take screenshot with Maximizer"
 
 local hash = "1ZdcYdHyjP"
 
@@ -299,13 +300,29 @@ end
 
 function TakeScreenshot()
     if not isScreenshoting then
-        isScreenshoting = true
         if SCR_QUALITY.enabled then
+            isScreenshoting = true
             HideUI()
-            if SCR_MAXIMIZER.enabled then
-                C_Timer.After(SCR_MAXIMIZER.seconds, function() Screenshot() end)
-            else
-                Screenshot()
+            Screenshot()
+        end
+    end
+end
+
+function TakeScreenshot_Maximizer()
+    if SCR_MAXIMIZER.enabled then
+        if not isScreenshoting then
+            if SCR_QUALITY.enabled then
+                isScreenshoting = true
+                for key, cvar in ipairs(graphics) do
+                    settings.graphics[key] = GetCVar(cvar.key)
+                    SetCVar(cvar.key, cvar.value)
+                end
+
+                HideUI()
+
+                if SCR_MAXIMIZER.enabled then
+                    C_Timer.After(SCR_MAXIMIZER.seconds, function() Screenshot() end)
+                end
             end
         end
     end
@@ -316,13 +333,6 @@ function HideUI()
         settings.names[key] = GetCVar(cvar.key)
     end
 
-    if SCR_MAXIMIZER.enabled then
-        for key, cvar in ipairs(graphics) do
-            settings.graphics[key] = GetCVar(cvar.key)
-            SetCVar(cvar.key, cvar.value)
-        end
-    end
-
 	for key, value in ipairs(SCR_NAMES) do
         SetCVar(names[key].key, value)
     end
@@ -331,17 +341,17 @@ function HideUI()
 end
 
 function ShowUI()
-    for key, value in ipairs(settings.names) do
-        SetCVar(names[key].key, value)
-    end
-
-    if SCR_MAXIMIZER.enabled then
-        for key, value in ipairs(settings.graphics) do
-           SetCVar(graphics[key].key, value)
+    if isScreenshoting then
+        for key, value in ipairs(settings.names) do
+            SetCVar(names[key].key, value)
         end
-    end
 
-	if isScreenshoting then
+        if SCR_MAXIMIZER.enabled then
+            for key, value in ipairs(settings.graphics) do
+               SetCVar(graphics[key].key, value)
+            end
+        end
+
         if SCR_QUALITY.hideui then
             ToggleFrame(UIParent)
         end
