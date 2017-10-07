@@ -1,4 +1,5 @@
 BINDING_HEADER_SCREENSHOT = "Screenshoter"
+
 BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
 BINDING_NAME_SCREENSHOTER_TAKE_MAXIMIZER = "Take screenshot with Maximizer"
 
@@ -142,48 +143,48 @@ local bugs = {
 }
 
 window:SetScript("OnEvent", function(self, event, ...)
- events[event](self, ...);
+    events[event](self, ...);
 end);
 
 function events:SCREENSHOT_SUCCEEDED()
-	ShowUI()
+    ShowUI()
 end
 
 function events:VARIABLES_LOADED()
-	LoadSettings()
-	LoadWindow()
+    LoadSettings()
+    LoadWindow()
 end
 
 function LoadSettings()
-	if SCR_HASH == nil or SCR_HASH ~= hash then
+    if SCR_HASH == nil or SCR_HASH ~= hash then
         SCR_HASH = hash
-		SCR_QUALITY = {
-			hideui = true,
-			enabled = true
+        SCR_QUALITY = {
+            hideui = true,
+            enabled = true
         }
         SCR_MAXIMIZER = {
             enabled = false,
             seconds = 3
         }
         SCR_NAMES = {}
-		for key in ipairs(names) do
-			SCR_NAMES[key] = false
-		end
-	end
+        for key in ipairs(names) do
+            SCR_NAMES[key] = false
+        end
+    end
 end
 
 function LoadWindow()
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("Screenshoter", {
-		type = "group",
-		args = {
-			enable = {
+    LibStub("AceConfig-3.0"):RegisterOptionsTable("Screenshoter", {
+        type = "group",
+        args = {
+            enable = {
                 order = 0,
-				name = "Enable",
-				desc = "Enables / disables the addon",
-				type = "toggle",
-				set = function(_, val) SCR_QUALITY.enabled = val end,
-				get = function() return SCR_QUALITY.enabled end
-			},
+                name = "Enable",
+                desc = "Enables / disables the addon",
+                type = "toggle",
+                set = function(_, val) SCR_QUALITY.enabled = val end,
+                get = function() return SCR_QUALITY.enabled end
+            },
             hideui = {
                 order = 1,
                 name = "Hide UI on screenshot",
@@ -192,39 +193,39 @@ function LoadWindow()
                 set = function(_, val) SCR_QUALITY.hideui = val end,
                 get = function() return SCR_QUALITY.hideui end
             },
-			names = {
+            names = {
                 order = 0,
-				name = "Names",
-				type = "group",
-				args = PrepareNames()
-			},
-			other = {
+                name = "Names",
+                type = "group",
+                args = PrepareNames()
+            },
+            other = {
                 order = 1,
-				name = "Other",
-				type = "group",
-				args = {
-					quality = {
+                name = "Other",
+                type = "group",
+                args = {
+                    quality = {
                         order = 0,
-						name = "Screenshot quality",
-						desc = "Change screenshot quality",
-						type = "range",
-						min = 0,
-						max = 10,
-						step = 1,
-						set = function(_, val) SetCVar("screenshotQuality", val) end,
-						get = function() return tonumber(GetCVar("screenshotQuality")) end
-					},
-					imgformat = {
+                        name = "Screenshot quality",
+                        desc = "Change screenshot quality",
+                        type = "range",
+                        min = 0,
+                        max = 10,
+                        step = 1,
+                        set = function(_, val) SetCVar("screenshotQuality", val) end,
+                        get = function() return tonumber(GetCVar("screenshotQuality")) end
+                    },
+                    imgformat = {
                         order = 1,
-						name = "Image format",
-						desc = "Change image format",
-						type = "select",
-						values = {"jpg", "tga"},
-						set = function(_, val) SetCVar("screenshotFormat", val == 1 and "jpg" or "tga") end,
-						get = function() return GetCVar("screenshotFormat") == "jpg" and 1 or 2 end
-					}
-				}
-			},
+                        name = "Image format",
+                        desc = "Change image format",
+                        type = "select",
+                        values = { "jpg", "tga" },
+                        set = function(_, val) SetCVar("screenshotFormat", val == 1 and "jpg" or "tga") end,
+                        get = function() return GetCVar("screenshotFormat") == "jpg" and 1 or 2 end
+                    }
+                }
+            },
             maximizer_experimental = {
                 order = 2,
                 name = "Maximizer - Experimental",
@@ -273,8 +274,8 @@ function LoadWindow()
                     },
                 }
             }
-		}
-	})
+        }
+    })
     LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Screenshoter", "Screenshoter")
 end
 
@@ -333,11 +334,11 @@ function HideUI()
         settings.names[key] = GetCVar(cvar.key)
     end
 
-	for key, value in ipairs(SCR_NAMES) do
+    for key, value in ipairs(SCR_NAMES) do
         SetCVar(names[key].key, value)
     end
 
-	if SCR_QUALITY.hideui then ToggleFrame(UIParent) end
+    if SCR_QUALITY.hideui then ToggleFrame(UIParent) end
 end
 
 function ShowUI()
@@ -348,7 +349,7 @@ function ShowUI()
 
         if SCR_MAXIMIZER.enabled then
             for key, value in ipairs(settings.graphics) do
-               SetCVar(graphics[key].key, value)
+                SetCVar(graphics[key].key, value)
             end
         end
 
@@ -360,5 +361,5 @@ function ShowUI()
 end
 
 for k in pairs(events) do
-	window:RegisterEvent(k);
+    window:RegisterEvent(k);
 end
