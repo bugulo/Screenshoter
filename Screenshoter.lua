@@ -174,7 +174,7 @@ function LoadWindow()
             hideui = {
                 order = 1,
                 name = "Hide UI on screenshot",
-                desc = "Enables / disables UI on screenshot",
+                desc = "Enables / disables UI on screenshot. Does not apply to screenshot that was taken during combat",
                 type = "toggle",
                 set = function(_, val) SCR_QUALITY.hideui = val end,
                 get = function() return SCR_QUALITY.hideui end
