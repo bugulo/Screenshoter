@@ -120,6 +120,18 @@ local graphics = {
         key = "graphicsParticleDensity",
         value = "4"
     },
+    {
+        key = "graphicsSSAO",
+        value = "3"
+    },
+    {
+        key = "graphicsTextureFiltering",
+        value = "6"
+    },
+    {
+        key = "graphicsLightingQuality",
+        value = "3"
+    }
 }
 
 local bugs = {
