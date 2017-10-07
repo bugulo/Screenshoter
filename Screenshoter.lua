@@ -137,7 +137,7 @@ local graphics = {
 local bugs = {
     "- Names of players and NPCs are always hidden on screenshots if ElvUI is enabled",
     "- Some name options are not available in settings yet",
-    "- Maximizer is not maximizing all graphics settings yet"
+    "- Maximizer is not maximizing all graphics settings yet(For example texture-resolution, anti-aliasing, sunshafts or liquid detail)"
 }
 
 window:SetScript("OnEvent", function(self, event, ...)
@@ -239,7 +239,7 @@ function LoadWindow()
                     },
                     description = {
                         order = 1,
-                        name = "\nNotice: Maximizer is new experimental feature. This feature can maximize graphics settings just before taking screenshot to make it look awesome and revert these changes just after taking screenshot. If you want to enable this feature, you can simply check Enable option above this notice",
+                        name = "\nNotice: Maximizer is new experimental feature. This feature can maximize graphics settings just before taking screenshot to make it look awesome and revert these changes just after taking screenshot. It is mostly for players that want to make their screenshots beautiful even though they are playing on low or medium settings. If you want to enable this feature, you can simply check Enable option above this notice",
                         type = "description"
                     },
                     seconds = {
