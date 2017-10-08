@@ -11,7 +11,7 @@ local events = {}
 local settings = {
     names = {},
     graphics = {},
-    uiHidden = false
+    wasVisible = false
 }
 
 local isScreenshoting = false
@@ -339,15 +339,11 @@ function Start()
         SetCVar(names[key].key, value)
     end
 
-    settings.uiHidden = UIParent:IsVisible()
-    if UIParent:IsVisible() then
-        if SCR_QUALITY.hideui then
-            UIParent:Hide()
-        end
+    settings.wasVisible = UIParent:IsVisible()
+    if SCR_QUALITY.hideui then
+        UIParent:Hide()
     else
-        if not SCR_QUALITY.hideui then
-            UIParent:Show()
-        end
+        UIParent:Show()
     end
 end
 
@@ -363,7 +359,7 @@ function Stop()
             end
         end
 
-        if settings.uiHidden then
+        if settings.wasVisible then
             UIParent:Show()
         else
             UIParent:Hide()
