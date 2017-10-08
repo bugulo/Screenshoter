@@ -10,7 +10,8 @@ local window = CreateFrame("FRAME", "EventFrame");
 local events = {}
 local settings = {
     names = {},
-    graphics = {}
+    graphics = {},
+    uiHidden = false
 }
 
 local isScreenshoting = false
@@ -147,7 +148,7 @@ window:SetScript("OnEvent", function(self, event, ...)
 end);
 
 function events:SCREENSHOT_SUCCEEDED()
-    ShowUI()
+    Stop()
 end
 
 function events:VARIABLES_LOADED()
@@ -303,7 +304,7 @@ function TakeScreenshot()
     if not isScreenshoting then
         if SCR_QUALITY.enabled then
             isScreenshoting = true
-            HideUI()
+            Start()
             Screenshot()
         end
     end
@@ -319,7 +320,7 @@ function TakeScreenshot_Maximizer()
                     SetCVar(cvar.key, cvar.value)
                 end
 
-                HideUI()
+                Start()
 
                 if SCR_MAXIMIZER.enabled then
                     C_Timer.After(SCR_MAXIMIZER.seconds, function() Screenshot() end)
@@ -329,7 +330,7 @@ function TakeScreenshot_Maximizer()
     end
 end
 
-function HideUI()
+function Start()
     for key, cvar in ipairs(names) do
         settings.names[key] = GetCVar(cvar.key)
     end
@@ -338,10 +339,19 @@ function HideUI()
         SetCVar(names[key].key, value)
     end
 
-    if SCR_QUALITY.hideui then ToggleFrame(UIParent) end
+    settings.uiHidden = UIParent:IsVisible()
+    if UIParent:IsVisible() then
+        if SCR_QUALITY.hideui then
+            UIParent:Hide()
+        end
+    else
+        if not SCR_QUALITY.hideui then
+            UIParent:Show()
+        end
+    end
 end
 
-function ShowUI()
+function Stop()
     if isScreenshoting then
         for key, value in ipairs(settings.names) do
             SetCVar(names[key].key, value)
@@ -353,8 +363,10 @@ function ShowUI()
             end
         end
 
-        if SCR_QUALITY.hideui then
-            ToggleFrame(UIParent)
+        if settings.uiHidden then
+            UIParent:Show()
+        else
+            UIParent:Hide()
         end
         isScreenshoting = false
     end
