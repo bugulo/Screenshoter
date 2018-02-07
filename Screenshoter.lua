@@ -40,20 +40,31 @@ local names = {
 }
 
 local graphics = {
+    --DISPLAY
+    { key = "MSAAQuality", value = "3" },
+    --TEXTURES
+    { key = "graphicsTextureFiltering", value = "6" },
+    { key = "graphicsProjectedTextures", value = "2" },
+    --ENVIROMENT
     { key = "graphicsViewDistance", value = "10" },
     { key = "graphicsEnvironmentDetail", value = "10" },
     { key = "graphicsGroundClutter", value = "10" },
+    --EFFECTS
     { key = "graphicsShadowQuality", value = "6" },
+    { key = "graphicsLiquidDetail", value = "4" },
+    { key = "graphicsSunshafts", value = "3" },
     { key = "graphicsParticleDensity", value = "4" },
-    { key = "graphicsSSAO", value = "3" },
-    { key = "graphicsTextureFiltering", value = "6" },
-    { key = "graphicsLightingQuality", value = "3" }
+    { key = "graphicsSSAO", value = "4" },
+    { key = "graphicsDepthEffects", value = "4" },
+    { key = "graphicsLightingQuality", value = "3" },
+    { key = "graphicsOutlineMode", value = "3" },
+    { key = "ffxGlow", value = "1" },
 }
 
-local bugs = {
+local issues = {
     "- Incompatibility with some addons",
     "- Some name options are not available in settings yet",
-    "- Maximizer is not maximizing all graphics settings yet(For example texture-resolution, anti-aliasing, sunshafts or liquid detail)"
+    "- Maximizer is not changing texture resolution yet"
 }
 
 window:SetScript("OnEvent", function(self, event, ...)
@@ -263,14 +274,14 @@ function LoadConfig()
                     },
                 }
             },
-            bugs = {
+            issues = {
                 order = 3,
-                name = "Known bugs/Problems",
+                name = "Known/possible issues",
                 type = "group",
                 args = {
                     text = {
                         order = 0,
-                        name = table.concat(bugs, "\n"),
+                        name = table.concat(issues, "\n"),
                         type = "description"
                     },
                 }
