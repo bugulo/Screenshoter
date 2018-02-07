@@ -1,180 +1,180 @@
+local hash = "4KuMaiejKh"
+
 BINDING_HEADER_SCREENSHOT = "Screenshoter"
 
 BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
 BINDING_NAME_SCREENSHOTER_TAKE_MAXIMIZER = "Take screenshot with Maximizer"
 
-local hash = "1ZdcYdHyjP"
-
 local window = CreateFrame("FRAME", "EventFrame");
 
-local events = {}
-local settings = {
+local cache =
+{
+    events = {},
     names = {},
     graphics = {},
-    wasVisible = false
+    wasUiVisible = false,
+    isScreenshoting = false
 }
-
-local isScreenshoting = false
 
 local names = {
     --FRIENDLY NAMES
-    {
-        key = "UnitNameFriendlyPlayerName",
-        name = "Friendly Player Names",
-        desc = "Toggle Friendly Player Names"
-    },
-    {
-        key = "UnitNameFriendlyPetName",
-        name = "Friendly Pet Names",
-        desc = "Toggle Friendly Pet Names"
-    },
-    {
-        key = "UnitNameFriendlySpecialNPCName",
-        name = "Friendly Special NPC Names",
-        desc = "Toggle Friendly Special NPC Names"
-    },
-    {
-        key = "UnitNameFriendlyTotemName",
-        name = "Friendly Totem Names",
-        desc = "Toggle Friendly Totem Names"
-    },
-    {
-        key = "UnitNameFriendlyGuardianName",
-        name = "Friendly Guardian Names",
-        desc = "Toggle Friendly Guardian Names"
+    { key = "UnitNameFriendlyPlayerName", name = "Friendly Player Names", desc = "Toggle Friendly Player Names" },
+    { key = "UnitNameFriendlyPetName", name = "Friendly Pet Names", desc = "Toggle Friendly Pet Names" },
+    { key = "UnitNameFriendlySpecialNPCName", name = "Friendly Special NPC Names", desc = "Toggle Friendly Special NPC Names" },
+    { key = "UnitNameFriendlyTotemName", name = "Friendly Totem Names", desc = "Toggle Friendly Totem Names" },
+    { key = "UnitNameFriendlyGuardianName", name = "Friendly Guardian Names", desc = "Toggle Friendly Guardian Names"
     },
     --ENEMY NAMES
-    {
-        key = "UnitNameEnemyPlayerName",
-        name = "Enemy Player Names",
-        desc = "Toggle Enemy Player Names"
-    },
-    {
-        key = "UnitNameEnemyPetName",
-        name = "Enemy Pet Names",
-        desc = "Toggle Enemy Pet Names"
-    },
-    {
-        key = "UnitNameEnemyTotemName",
-        name = "Enemy Totem Names",
-        desc = "Toggle Enemy Totem Names"
-    },
-    {
-        key = "UnitNameEnemyGuardianName",
-        name = "Enemy Guardian Names",
-        desc = "Toggle Enemy Guardian Names"
-    },
+    { key = "UnitNameEnemyPlayerName", name = "Enemy Player Names", desc = "Toggle Enemy Player Names" },
+    { key = "UnitNameEnemyPetName", name = "Enemy Pet Names", desc = "Toggle Enemy Pet Names" },
+    { key = "UnitNameEnemyTotemName", name = "Enemy Totem Names", desc = "Toggle Enemy Totem Names" },
+    { key = "UnitNameEnemyGuardianName", name = "Enemy Guardian Names", desc = "Toggle Enemy Guardian Names" },
     --MISC
-    {
-        key = "UnitNameGuildTitle",
-        name = "Guild Titles",
-        desc = "Toggle Guild Titles in Player Names"
-    },
-    {
-        key = "UnitNameNonCombatCreatureName",
-        name = "Non-Combat Creature Names",
-        desc = "Toggle Non-Combat Creature Names"
-    },
-    {
-        key = "UnitNameNPC",
-        name = "NPC Names",
-        desc = "Toggle NPC Names"
-    },
-    {
-        key = "UnitNameOwn",
-        name = "Own Name",
-        desc = "Toggle Own Name"
-    },
-    {
-        key = "UnitNamePlayerGuild",
-        name = "Guild Tags",
-        desc = "Toggle Guild Tags"
-    },
-    {
-        key = "UnitNamePlayerPVPTitle",
-        name = "PVP Titles",
-        desc = "Toggle PVP Titles"
-    },
-    {
-        key = "UnitNameInteractiveNPC",
-        name = "Interactive NPC Names",
-        desc = "Toggle Interactive NPC Names"
-    }
+    { key = "UnitNameGuildTitle", name = "Guild Titles", desc = "Toggle Guild Titles in Player Names" },
+    { key = "UnitNameNonCombatCreatureName", name = "Non-Combat Creature Names", desc = "Toggle Non-Combat Creature Names" },
+    { key = "UnitNameNPC", name = "NPC Names", desc = "Toggle NPC Names" },
+    { key = "UnitNameOwn", name = "Own Name", desc = "Toggle Own Name" },
+    { key = "UnitNamePlayerGuild", name = "Guild Tags", desc = "Toggle Guild Tags" },
+    { key = "UnitNamePlayerPVPTitle", name = "PVP Titles", desc = "Toggle PVP Titles" },
+    { key = "UnitNameInteractiveNPC", name = "Interactive NPC Names", desc = "Toggle Interactive NPC Names" }
 }
 
 local graphics = {
-    {
-        key = "graphicsViewDistance",
-        value = "10"
-    },
-    {
-        key = "graphicsEnvironmentDetail",
-        value = "10"
-    },
-    {
-        key = "graphicsGroundClutter",
-        value = "10"
-    },
-    {
-        key = "graphicsShadowQuality",
-        value = "6"
-    },
-    {
-        key = "graphicsParticleDensity",
-        value = "4"
-    },
-    {
-        key = "graphicsSSAO",
-        value = "3"
-    },
-    {
-        key = "graphicsTextureFiltering",
-        value = "6"
-    },
-    {
-        key = "graphicsLightingQuality",
-        value = "3"
-    }
+    { key = "graphicsViewDistance", value = "10" },
+    { key = "graphicsEnvironmentDetail", value = "10" },
+    { key = "graphicsGroundClutter", value = "10" },
+    { key = "graphicsShadowQuality", value = "6" },
+    { key = "graphicsParticleDensity", value = "4" },
+    { key = "graphicsSSAO", value = "3" },
+    { key = "graphicsTextureFiltering", value = "6" },
+    { key = "graphicsLightingQuality", value = "3" }
 }
 
 local bugs = {
-    "- Names of players and NPCs are always hidden on screenshots if ElvUI is enabled",
+    "- Incompatibility with some addons",
     "- Some name options are not available in settings yet",
     "- Maximizer is not maximizing all graphics settings yet(For example texture-resolution, anti-aliasing, sunshafts or liquid detail)"
 }
 
 window:SetScript("OnEvent", function(self, event, ...)
-    events[event](self, ...);
+    cache.events[event](self, ...);
 end);
 
-function events:SCREENSHOT_SUCCEEDED()
+function cache.events:SCREENSHOT_SUCCEEDED()
     Stop()
 end
 
-function events:VARIABLES_LOADED()
-    LoadSettings()
-    LoadWindow()
+function cache.events:VARIABLES_LOADED()
+    if CheckVersion() == false then ResetSettings() end
+    LoadConfig()
 end
 
-function LoadSettings()
-    if SCR_HASH == nil or SCR_HASH ~= hash then
-        SCR_HASH = hash
-        SCR_QUALITY = {
-            hideui = true,
-            enabled = true
-        }
-        SCR_MAXIMIZER = {
-            enabled = false,
-            seconds = 3
-        }
-        SCR_NAMES = {}
-        for key in ipairs(names) do
-            SCR_NAMES[key] = false
-        end
+for k in pairs(cache.events) do
+    window:RegisterEvent(k);
+end
+
+function CheckVersion()
+    if SCR_CONFIG == nil then return false
+    elseif SCR_CONFIG.hash ~= hash then return false
+    else return true
     end
 end
 
-function LoadWindow()
+function ResetSettings()
+    SCR_CONFIG = {}
+    SCR_CONFIG.hash = hash
+    SCR_CONFIG.quality = { hideui = true, enabled = true }
+    SCR_CONFIG.maximizer = { enabled = false, seconds = 3 }
+    SCR_CONFIG.names = {}
+
+    for key in ipairs(names) do
+        SCR_CONFIG.names[key] = false
+    end
+end
+
+function PrepareNames()
+    local args = {}
+    args.description = {
+        order = 0,
+        name = "You can select which names you want to have on screenshot\n",
+        type = "description"
+    }
+    for key, cvar in ipairs(names) do
+        args[cvar.key] = {
+            order = key,
+            name = cvar.name,
+            desc = cvar.desc,
+            type = "toggle",
+            set = function(_, val) SCR_CONFIG.names[key] = val end,
+            get = function() return SCR_CONFIG.names[key] end
+        }
+    end
+    return args
+end
+
+function TakeScreenshot()
+    if cache.isScreenshoting or not SCR_CONFIG.quality.enabled then return end
+
+    cache.isScreenshoting = true
+    Start()
+    Screenshot()
+end
+
+function TakeScreenshot_Maximizer()
+    if cache.isScreenshoting or not SCR_CONFIG.maximizer.enabled or not SCR_CONFIG.quality.enabled then return end
+
+    cache.isScreenshoting = true
+    for key, cvar in ipairs(graphics) do
+        cache.graphics[key] = GetCVar(cvar.key)
+        SetCVar(cvar.key, cvar.value)
+    end
+
+    Start()
+
+    if SCR_CONFIG.maximizer.enabled then
+        C_Timer.After(SCR_CONFIG.maximizer.seconds, function() Screenshot() end)
+    end
+end
+
+function Start()
+    for key, cvar in ipairs(names) do
+        cache.names[key] = GetCVar(cvar.key)
+    end
+
+    for key, value in ipairs(SCR_CONFIG.names) do
+        SetCVar(names[key].key, value)
+    end
+
+    cache.wasUiVisible = UIParent:IsVisible()
+    if SCR_CONFIG.quality.hideui then
+        UIParent:Hide()
+    else
+        UIParent:Show()
+    end
+end
+
+function Stop()
+    if not cache.isScreenshoting then return end
+
+    for key, value in ipairs(cache.names) do
+        SetCVar(names[key].key, value)
+    end
+
+    if SCR_CONFIG.maximizer.enabled then
+        for key, value in ipairs(cache.graphics) do
+            SetCVar(graphics[key].key, value)
+        end
+    end
+
+    if cache.wasUiVisible then
+        UIParent:Show()
+    else
+        UIParent:Hide()
+    end
+    cache.isScreenshoting = false
+end
+
+function LoadConfig()
     LibStub("AceConfig-3.0"):RegisterOptionsTable("Screenshoter", {
         type = "group",
         args = {
@@ -183,16 +183,16 @@ function LoadWindow()
                 name = "Enable",
                 desc = "Enables / disables the addon",
                 type = "toggle",
-                set = function(_, val) SCR_QUALITY.enabled = val end,
-                get = function() return SCR_QUALITY.enabled end
+                set = function(_, val) SCR_CONFIG.quality.enabled = val end,
+                get = function() return SCR_CONFIG.quality.enabled end
             },
             hideui = {
                 order = 1,
                 name = "Hide UI on screenshot",
                 desc = "Enables / disables UI on screenshot. Does not apply to screenshot that was taken during combat",
                 type = "toggle",
-                set = function(_, val) SCR_QUALITY.hideui = val end,
-                get = function() return SCR_QUALITY.hideui end
+                set = function(_, val) SCR_CONFIG.quality.hideui = val end,
+                get = function() return SCR_CONFIG.quality.hideui end
             },
             names = {
                 order = 0,
@@ -237,8 +237,8 @@ function LoadWindow()
                         name = "Enable Maximizer",
                         desc = "Enables / disables the Maximizer feature",
                         type = "toggle",
-                        set = function(_, val) SCR_MAXIMIZER.enabled = val end,
-                        get = function() return SCR_MAXIMIZER.enabled end
+                        set = function(_, val) SCR_CONFIG.maximizer.enabled = val end,
+                        get = function() return SCR_CONFIG.maximizer.enabled end
                     },
                     description = {
                         order = 1,
@@ -253,8 +253,8 @@ function LoadWindow()
                         min = 2,
                         max = 10,
                         step = 1,
-                        set = function(_, val) SCR_MAXIMIZER.seconds = val end,
-                        get = function() return SCR_MAXIMIZER.seconds end
+                        set = function(_, val) SCR_CONFIG.maximizer.seconds = val end,
+                        get = function() return SCR_CONFIG.maximizer.seconds end
                     },
                     stw_desc = {
                         order = 3,
@@ -278,96 +278,4 @@ function LoadWindow()
         }
     })
     LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Screenshoter", "Screenshoter")
-end
-
-function PrepareNames()
-    local args = {}
-    args.description = {
-        order = 0,
-        name = "You can select which names you want to have on screenshot\n",
-        type = "description"
-    }
-    for key, cvar in ipairs(names) do
-        args[cvar.key] = {
-            order = key,
-            name = cvar.name,
-            desc = cvar.desc,
-            type = "toggle",
-            set = function(_, val) SCR_NAMES[key] = val end,
-            get = function() return SCR_NAMES[key] end
-        }
-    end
-    return args
-end
-
-function TakeScreenshot()
-    if not isScreenshoting then
-        if SCR_QUALITY.enabled then
-            isScreenshoting = true
-            Start()
-            Screenshot()
-        end
-    end
-end
-
-function TakeScreenshot_Maximizer()
-    if SCR_MAXIMIZER.enabled then
-        if not isScreenshoting then
-            if SCR_QUALITY.enabled then
-                isScreenshoting = true
-                for key, cvar in ipairs(graphics) do
-                    settings.graphics[key] = GetCVar(cvar.key)
-                    SetCVar(cvar.key, cvar.value)
-                end
-
-                Start()
-
-                if SCR_MAXIMIZER.enabled then
-                    C_Timer.After(SCR_MAXIMIZER.seconds, function() Screenshot() end)
-                end
-            end
-        end
-    end
-end
-
-function Start()
-    for key, cvar in ipairs(names) do
-        settings.names[key] = GetCVar(cvar.key)
-    end
-
-    for key, value in ipairs(SCR_NAMES) do
-        SetCVar(names[key].key, value)
-    end
-
-    settings.wasVisible = UIParent:IsVisible()
-    if SCR_QUALITY.hideui then
-        UIParent:Hide()
-    else
-        UIParent:Show()
-    end
-end
-
-function Stop()
-    if isScreenshoting then
-        for key, value in ipairs(settings.names) do
-            SetCVar(names[key].key, value)
-        end
-
-        if SCR_MAXIMIZER.enabled then
-            for key, value in ipairs(settings.graphics) do
-                SetCVar(graphics[key].key, value)
-            end
-        end
-
-        if settings.wasVisible then
-            UIParent:Show()
-        else
-            UIParent:Hide()
-        end
-        isScreenshoting = false
-    end
-end
-
-for k in pairs(events) do
-    window:RegisterEvent(k);
 end
