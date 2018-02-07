@@ -240,7 +240,7 @@ function LoadConfig()
             },
             maximizer_experimental = {
                 order = 2,
-                name = "Maximizer - Experimental",
+                name = "Maximizer",
                 type = "group",
                 args = {
                     enabled = {
@@ -253,7 +253,7 @@ function LoadConfig()
                     },
                     description = {
                         order = 1,
-                        name = "\nNotice: Maximizer is new experimental feature. This feature can maximize graphics settings just before taking screenshot to make it look awesome and revert these changes just after taking screenshot. It is mostly for players that want to make their screenshots beautiful even though they are playing on low or medium settings. If you want to enable this feature, you can simply check Enable option above this notice",
+                        name = "\nNotice: Maximizer can maximize graphics settings just before taking screenshot to make it look awesome and revert these changes just after taking screenshot. It is mostly for players that want to make their screenshots beautiful even though they are playing on low or medium settings. If you want to enable this feature, you can simply check Enable option above this notice",
                         type = "description"
                     },
                     seconds = {
