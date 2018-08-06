@@ -1,4 +1,4 @@
-local hash = "4KuMaiejKh"
+local hash = "ucjbUMhfzO"
 
 BINDING_HEADER_SCREENSHOT = "Screenshoter"
 
@@ -6,6 +6,14 @@ BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
 BINDING_NAME_SCREENSHOTER_TAKE_MAXIMIZER = "Take screenshot with Maximizer"
 
 local window = CreateFrame("FRAME", "EventFrame");
+
+local watermark = CreateFrame("Frame", "Watermark", nil)
+watermark:SetSize(200,100)
+watermark:SetPoint("TOPLEFT", 0, -10)
+watermark.text = watermark:CreateFontString(nil, "ARTWORK", "GameFontGreen")
+watermark.text:SetAllPoints(true)
+watermark.text:SetJustifyH("CENTER")
+watermark.text:SetJustifyV("TOP") 
 
 local cache =
 {
@@ -62,7 +70,7 @@ local graphics = {
 }
 
 local issues = {
-    "- Incompatibility with some addons",
+    "- Possible incompatibility with some addons",
     "- Some name options are not available in settings yet",
     "- Maximizer is not changing texture resolution yet"
 }
@@ -76,7 +84,9 @@ function cache.events:SCREENSHOT_SUCCEEDED()
 end
 
 function cache.events:VARIABLES_LOADED()
-    if CheckVersion() == false then ResetSettings() end
+    if SCR_CONFIG == nil then ResetSettings()
+    elseif SCR_CONFIG.hash ~= hash then Update()
+    end
     LoadConfig()
 end
 
@@ -84,23 +94,22 @@ for k in pairs(cache.events) do
     window:RegisterEvent(k);
 end
 
-function CheckVersion()
-    if SCR_CONFIG == nil then return false
-    elseif SCR_CONFIG.hash ~= hash then return false
-    else return true
-    end
-end
-
 function ResetSettings()
     SCR_CONFIG = {}
     SCR_CONFIG.hash = hash
     SCR_CONFIG.quality = { hideui = true, enabled = true }
+    SCR_CONFIG.watermark = { enabled = false, format = "{char}\n{x}:{y} , {zone}" }
     SCR_CONFIG.maximizer = { enabled = false, seconds = 3 }
     SCR_CONFIG.names = {}
 
     for key in ipairs(names) do
         SCR_CONFIG.names[key] = false
     end
+end
+
+function Update()
+    SCR_CONFIG.hash = hash
+    SCR_CONFIG.watermark = { enabled = false, format = "{char}\n{x}:{y} , {zone}" }
 end
 
 function PrepareNames()
@@ -162,6 +171,20 @@ function Start()
     else
         UIParent:Show()
     end
+
+    if SCR_CONFIG.watermark.enabled then
+        mapID = C_Map.GetBestMapForUnit("player")
+        position = C_Map.GetPlayerMapPosition(mapID,"player")
+
+        result = SCR_CONFIG.watermark.format
+        result = string.gsub(result, "{zone}", GetMinimapZoneText())
+        result = string.gsub(result, "{char}", UnitName("player"))
+        result = string.gsub(result, "{x}", format("%d", position.x * 100.0))
+        result = string.gsub(result, "{y}", format("%d", position.y * 100.0))
+
+        watermark.text:SetText(result)
+        watermark:Show()
+    end
 end
 
 function Stop()
@@ -182,6 +205,11 @@ function Stop()
     else
         UIParent:Hide()
     end
+
+    if SCR_CONFIG.watermark.enabled then
+        watermark:Hide()
+    end
+
     cache.isScreenshoting = false
 end
 
@@ -211,8 +239,38 @@ function LoadConfig()
                 type = "group",
                 args = PrepareNames()
             },
-            other = {
+            watermark = {
                 order = 1,
+                name = "Watermark",
+                type = "group",
+                args = {
+                    enabled = {
+                        order = 0,
+                        name = "Enable Watermark",
+                        desc = "Enables / disables the Watermark feature",
+                        type = "toggle",
+                        set = function(_, val) SCR_CONFIG.watermark.enabled = val end,
+                        get = function() return SCR_CONFIG.watermark.enabled end
+                    },
+                    format = {
+                        order = 1,
+                        width = "full",
+                        name = "Format",
+                        multiline = true,
+                        desc = "Customize watermark format",
+                        type = "input",
+                        set = function(_, val) SCR_CONFIG.watermark.format = val end,
+                        get = function() return SCR_CONFIG.watermark.format end
+                    },
+                    format_desc = {
+                        order = 3,
+                        name = "\nAvailable variables: \n\n {char} - Character`s name\n {x} - Position X\n {y} - Position Y\n {zone} - Zone",
+                        type = "description"
+                    },
+                }
+            },
+            other = {
+                order = 2,
                 name = "Other",
                 type = "group",
                 args = {
@@ -238,8 +296,8 @@ function LoadConfig()
                     }
                 }
             },
-            maximizer_experimental = {
-                order = 2,
+            maximizer = {
+                order = 3,
                 name = "Maximizer",
                 type = "group",
                 args = {
