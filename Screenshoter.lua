@@ -3,15 +3,9 @@ BINDING_HEADER_SCREENSHOT = "Screenshoter"
 BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
 BINDING_NAME_SCREENSHOTER_TAKE_MAXIMIZER = "Take screenshot with Maximizer"
 
-local Window = CreateFrame("FRAME", "EventFrame");
-
-local Watermark = CreateFrame("Frame", "Watermark", nil)
-Watermark:SetSize(200,100)
-Watermark:SetPoint("TOPLEFT", 0, -10)
-Watermark.text = Watermark:CreateFontString(nil, "ARTWORK", "GameFontGreen")
-Watermark.text:SetAllPoints(true)
-Watermark.text:SetJustifyH("CENTER")
-Watermark.text:SetJustifyV("TOP") 
+local AceConfig = LibStub("AceConfig-3.0")
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+local AceDB = LibStub("AceDB-3.0")
 
 local Cache =
 {
@@ -21,10 +15,6 @@ local Cache =
     UIState = false,
     IsScreenshoting = false
 }
-
-local AceConfig = LibStub("AceConfig-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local AceDB = LibStub("AceDB-3.0")
 
 local Database
 
@@ -75,11 +65,11 @@ local Graphics = {
 
 local Issues = {
     "- Possible incompatibility with some addons",
-    "- Some name options are not available in settings yet",
+    "- Some name options may not be available in settings yet",
     "- Maximizer is not changing texture resolution yet"
 }
 
-Window:SetScript("OnEvent", function(self, event, ...)
+Screenshoter_EventFrame:SetScript("OnEvent", function(self, event, ...)
     Cache.Events[event](self, ...);
 end);
 
@@ -115,7 +105,7 @@ function Cache.Events:VARIABLES_LOADED()
 end
 
 for k in pairs(Cache.Events) do
-    Window:RegisterEvent(k);
+    Screenshoter_EventFrame:RegisterEvent(k);
 end
 
 function Screenshoter_PrepareNames()
@@ -188,8 +178,8 @@ function Screenshoter_Start()
         result = string.gsub(result, "{x}", format("%d", position.x * 100.0))
         result = string.gsub(result, "{y}", format("%d", position.y * 100.0))
 
-        Watermark.text:SetText(result)
-        Watermark:Show()
+        Screenshoter_Watermark_Text:SetText(result)
+        Screenshoter_Watermark_Text:Show()
     end
 end
 
@@ -213,7 +203,7 @@ function Screenshoter_Stop()
     end
 
     if Database.global.watermark.enabled then
-        Watermark:Hide()
+        Screenshoter_Watermark_Text:Hide()
     end
 
     Cache.IsScreenshoting = false
@@ -275,35 +265,8 @@ function Screenshoter_LoadConfig()
                     },
                 }
             },
-            other = {
-                order = 2,
-                name = "Other",
-                type = "group",
-                args = {
-                    quality = {
-                        order = 0,
-                        name = "Screenshot quality",
-                        desc = "Change screenshot quality",
-                        type = "range",
-                        min = 0,
-                        max = 10,
-                        step = 1,
-                        set = function(_, val) SetCVar("screenshotQuality", val) end,
-                        get = function() return tonumber(GetCVar("screenshotQuality")) end
-                    },
-                    imgformat = {
-                        order = 1,
-                        name = "Image format",
-                        desc = "Change image format",
-                        type = "select",
-                        values = { "jpg", "tga" },
-                        set = function(_, val) SetCVar("screenshotFormat", val == 1 and "jpg" or "tga") end,
-                        get = function() return GetCVar("screenshotFormat") == "jpg" and 1 or 2 end
-                    }
-                }
-            },
             maximizer = {
-                order = 3,
+                order = 2,
                 name = "Maximizer",
                 type = "group",
                 args = {
@@ -338,8 +301,35 @@ function Screenshoter_LoadConfig()
                     },
                 }
             },
-            issues = {
+            other = {
                 order = 3,
+                name = "Other",
+                type = "group",
+                args = {
+                    quality = {
+                        order = 0,
+                        name = "Screenshot quality",
+                        desc = "Change screenshot quality",
+                        type = "range",
+                        min = 0,
+                        max = 10,
+                        step = 1,
+                        set = function(_, val) SetCVar("screenshotQuality", val) end,
+                        get = function() return tonumber(GetCVar("screenshotQuality")) end
+                    },
+                    imgformat = {
+                        order = 1,
+                        name = "Image format",
+                        desc = "Change image format",
+                        type = "select",
+                        values = { "jpg", "tga" },
+                        set = function(_, val) SetCVar("screenshotFormat", val == 1 and "jpg" or "tga") end,
+                        get = function() return GetCVar("screenshotFormat") == "jpg" and 1 or 2 end
+                    }
+                }
+            },
+            issues = {
+                order = 4,
                 name = "Known/possible issues",
                 type = "group",
                 args = {

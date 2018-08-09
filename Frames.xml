@@ -1,0 +1,16 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+	<Frame name="Screenshoter_EventFrame"/>
+    <Frame name="Screenshoter_Watermark">
+		<Size x="200" y="100"/>
+		<Anchors>
+			<Anchor point="TOPLEFT"/>
+		</Anchors>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="Screenshoter_Watermark_Text" justifyV="TOP" justifyH="CENTER" inherits="GameFontGreen">
+				</FontString>
+			</Layer>
+		</Layers>
+	</Frame>
+</Ui>
