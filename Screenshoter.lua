@@ -84,7 +84,7 @@ window:SetScript("OnEvent", function(self, event, ...)
 end);
 
 function cache.events:SCREENSHOT_SUCCEEDED()
-    Stop()
+    Screenshoter_Stop()
 end
 
 function cache.events:VARIABLES_LOADED()
@@ -111,14 +111,14 @@ function cache.events:VARIABLES_LOADED()
     }
 
     database = AceDB:New("SCR_CONFIG", defaults, true)
-    LoadConfig()
+    Screenshoter_LoadConfig()
 end
 
 for k in pairs(cache.events) do
     window:RegisterEvent(k);
 end
 
-function PrepareNames()
+function Screenshoter_PrepareNames()
     local args = {}
     args.description = {
         order = 0,
@@ -138,15 +138,15 @@ function PrepareNames()
     return args
 end
 
-function TakeScreenshot()
+function Screenshoter_Take()
     if cache.isScreenshoting or not database.global.general.enabled then return end
 
     cache.isScreenshoting = true
-    Start()
+    Screenshoter_Start()
     Screenshot()
 end
 
-function TakeScreenshot_Maximizer()
+function Screenshoter_Maximizer()
     if cache.isScreenshoting or not database.global.maximizer.enabled or not database.global.general.enabled then return end
 
     cache.isScreenshoting = true
@@ -155,14 +155,14 @@ function TakeScreenshot_Maximizer()
         SetCVar(cvar.key, cvar.value)
     end
 
-    Start()
+    Screenshoter_Start()
 
     if database.global.maximizer.enabled then
         C_Timer.After(database.global.maximizer.seconds, function() Screenshot() end)
     end
 end
 
-function Start()
+function Screenshoter_Start()
     for key, cvar in ipairs(names) do
         cache.names[key] = GetCVar(cvar.key)
     end
@@ -193,7 +193,7 @@ function Start()
     end
 end
 
-function Stop()
+function Screenshoter_Stop()
     if not cache.isScreenshoting then return end
 
     for key, value in ipairs(cache.names) do
@@ -219,7 +219,7 @@ function Stop()
     cache.isScreenshoting = false
 end
 
-function LoadConfig()
+function Screenshoter_LoadConfig()
     AceConfig:RegisterOptionsTable("Screenshoter", {
         type = "group",
         args = {
@@ -243,7 +243,7 @@ function LoadConfig()
                 order = 0,
                 name = "Names",
                 type = "group",
-                args = PrepareNames()
+                args = Screenshoter_PrepareNames()
             },
             watermark = {
                 order = 1,

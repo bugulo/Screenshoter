@@ -1,8 +1,8 @@
 <Bindings>
     <Binding name="SCREENSHOTER_TAKE" category="Screenshoter">
-        TakeScreenshot();
+        Screenshoter_Take();
     </Binding>
     <Binding name="SCREENSHOTER_TAKE_MAXIMIZER" category="Screenshoter">
-        TakeScreenshot_Maximizer();
+        Screenshoter_Maximizer();
     </Binding>
 </Bindings>
