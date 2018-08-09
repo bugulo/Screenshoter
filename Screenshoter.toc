@@ -2,7 +2,7 @@
 ## Title: Screenshoter
 ## Author: Michal "UareBugged" Šlesár
 ## Version: 1.5.0
-## SavedVariables: SCR_CONFIG
+## SavedVariables: ScreenshoterDB
 
 embeds.xml
 

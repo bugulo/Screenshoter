@@ -3,32 +3,32 @@ BINDING_HEADER_SCREENSHOT = "Screenshoter"
 BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
 BINDING_NAME_SCREENSHOTER_TAKE_MAXIMIZER = "Take screenshot with Maximizer"
 
-local window = CreateFrame("FRAME", "EventFrame");
+local Window = CreateFrame("FRAME", "EventFrame");
 
-local watermark = CreateFrame("Frame", "Watermark", nil)
-watermark:SetSize(200,100)
-watermark:SetPoint("TOPLEFT", 0, -10)
-watermark.text = watermark:CreateFontString(nil, "ARTWORK", "GameFontGreen")
-watermark.text:SetAllPoints(true)
-watermark.text:SetJustifyH("CENTER")
-watermark.text:SetJustifyV("TOP") 
+local Watermark = CreateFrame("Frame", "Watermark", nil)
+Watermark:SetSize(200,100)
+Watermark:SetPoint("TOPLEFT", 0, -10)
+Watermark.text = Watermark:CreateFontString(nil, "ARTWORK", "GameFontGreen")
+Watermark.text:SetAllPoints(true)
+Watermark.text:SetJustifyH("CENTER")
+Watermark.text:SetJustifyV("TOP") 
 
-local cache =
+local Cache =
 {
-    events = {},
-    names = {},
-    graphics = {},
-    wasUiVisible = false,
-    isScreenshoting = false
+    Events = {},
+    Names = {},
+    Graphics = {},
+    UIState = false,
+    IsScreenshoting = false
 }
 
 local AceConfig = LibStub("AceConfig-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceDB = LibStub("AceDB-3.0")
 
-local database
+local Database
 
-local names = {
+local Names = {
     --FRIENDLY NAMES
     { key = "UnitNameFriendlyPlayerName", name = "Friendly Player Names", desc = "Toggle Friendly Player Names" },
     { key = "UnitNameFriendlyPetName", name = "Friendly Pet Names", desc = "Toggle Friendly Pet Names" },
@@ -51,7 +51,7 @@ local names = {
     { key = "UnitNameInteractiveNPC", name = "Interactive NPC Names", desc = "Toggle Interactive NPC Names" }
 }
 
-local graphics = {
+local Graphics = {
     --DISPLAY
     { key = "MSAAQuality", value = "3" },
     --TEXTURES
@@ -73,21 +73,21 @@ local graphics = {
     { key = "ffxGlow", value = "1" },
 }
 
-local issues = {
+local Issues = {
     "- Possible incompatibility with some addons",
     "- Some name options are not available in settings yet",
     "- Maximizer is not changing texture resolution yet"
 }
 
-window:SetScript("OnEvent", function(self, event, ...)
-    cache.events[event](self, ...);
+Window:SetScript("OnEvent", function(self, event, ...)
+    Cache.Events[event](self, ...);
 end);
 
-function cache.events:SCREENSHOT_SUCCEEDED()
+function Cache.Events:SCREENSHOT_SUCCEEDED()
     Screenshoter_Stop()
 end
 
-function cache.events:VARIABLES_LOADED()
+function Cache.Events:VARIABLES_LOADED()
     local defaults = {
         global = {
             general = {
@@ -110,12 +110,12 @@ function cache.events:VARIABLES_LOADED()
         }
     }
 
-    database = AceDB:New("SCR_CONFIG", defaults, true)
+    Database = AceDB:New("ScreenshoterDB", defaults, true)
     Screenshoter_LoadConfig()
 end
 
-for k in pairs(cache.events) do
-    window:RegisterEvent(k);
+for k in pairs(Cache.Events) do
+    Window:RegisterEvent(k);
 end
 
 function Screenshoter_PrepareNames()
@@ -125,98 +125,98 @@ function Screenshoter_PrepareNames()
         name = "You can select which names you want to have on screenshot\n",
         type = "description"
     }
-    for key, cvar in ipairs(names) do
+    for key, cvar in ipairs(Names) do
         args[cvar.key] = {
             order = key,
             name = cvar.name,
             desc = cvar.desc,
             type = "toggle",
-            set = function(_, val) database.global.names[key].enabled = val end,
-            get = function() return database.global.names[key].enabled end
+            set = function(_, val) Database.global.names[key].enabled = val end,
+            get = function() return Database.global.names[key].enabled end
         }
     end
     return args
 end
 
 function Screenshoter_Take()
-    if cache.isScreenshoting or not database.global.general.enabled then return end
+    if Cache.IsScreenshoting or not Database.global.general.enabled then return end
 
-    cache.isScreenshoting = true
+    Cache.IsScreenshoting = true
     Screenshoter_Start()
     Screenshot()
 end
 
 function Screenshoter_Maximizer()
-    if cache.isScreenshoting or not database.global.maximizer.enabled or not database.global.general.enabled then return end
+    if Cache.IsScreenshoting or not Database.global.maximizer.enabled or not Database.global.general.enabled then return end
 
-    cache.isScreenshoting = true
-    for key, cvar in ipairs(graphics) do
-        cache.graphics[key] = GetCVar(cvar.key)
+    Cache.IsScreenshoting = true
+    for key, cvar in ipairs(Graphics) do
+        Cache.Graphics[key] = GetCVar(cvar.key)
         SetCVar(cvar.key, cvar.value)
     end
 
     Screenshoter_Start()
 
-    if database.global.maximizer.enabled then
-        C_Timer.After(database.global.maximizer.seconds, function() Screenshot() end)
+    if Database.global.maximizer.enabled then
+        C_Timer.After(Database.global.maximizer.seconds, function() Screenshot() end)
     end
 end
 
 function Screenshoter_Start()
-    for key, cvar in ipairs(names) do
-        cache.names[key] = GetCVar(cvar.key)
+    for key, cvar in ipairs(Names) do
+        Cache.Names[key] = GetCVar(cvar.key)
     end
 
-    for key, value in ipairs(database.global.names) do
-        SetCVar(names[key].key, value.enabled)
+    for key, value in ipairs(Database.global.names) do
+        SetCVar(Names[key].key, value.enabled)
     end
 
-    cache.wasUiVisible = UIParent:IsVisible()
-    if database.global.general.hideui then
+    Cache.UIState = UIParent:IsVisible()
+    if Database.global.general.hideui then
         UIParent:Hide()
     else
         UIParent:Show()
     end
 
-    if database.global.watermark.enabled then
+    if Database.global.watermark.enabled then
         mapID = C_Map.GetBestMapForUnit("player")
         position = C_Map.GetPlayerMapPosition(mapID,"player")
 
-        result = database.global.watermark.format
+        result = Database.global.watermark.format
         result = string.gsub(result, "{zone}", GetMinimapZoneText())
         result = string.gsub(result, "{char}", UnitName("player"))
         result = string.gsub(result, "{x}", format("%d", position.x * 100.0))
         result = string.gsub(result, "{y}", format("%d", position.y * 100.0))
 
-        watermark.text:SetText(result)
-        watermark:Show()
+        Watermark.text:SetText(result)
+        Watermark:Show()
     end
 end
 
 function Screenshoter_Stop()
-    if not cache.isScreenshoting then return end
+    if not Cache.IsScreenshoting then return end
 
-    for key, value in ipairs(cache.names) do
-        SetCVar(names[key].key, value)
+    for key, value in ipairs(Cache.Names) do
+        SetCVar(Names[key].key, value)
     end
 
-    if database.global.maximizer.enabled then
-        for key, value in ipairs(cache.graphics) do
-            SetCVar(graphics[key].key, value)
+    if Database.global.maximizer.enabled then
+        for key, value in ipairs(Cache.Graphics) do
+            SetCVar(Graphics[key].key, value)
         end
     end
 
-    if cache.wasUiVisible then
+    if Cache.UIState then
         UIParent:Show()
     else
         UIParent:Hide()
     end
 
-    if database.global.watermark.enabled then
-        watermark:Hide()
+    if Database.global.watermark.enabled then
+        Watermark:Hide()
     end
 
-    cache.isScreenshoting = false
+    Cache.IsScreenshoting = false
 end
 
 function Screenshoter_LoadConfig()
@@ -228,16 +228,16 @@ function Screenshoter_LoadConfig()
                 name = "Enable",
                 desc = "Enables / disables the addon",
                 type = "toggle",
-                set = function(_, val) database.global.general.enabled = val end,
-                get = function() return database.global.general.enabled end
+                set = function(_, val) Database.global.general.enabled = val end,
+                get = function() return Database.global.general.enabled end
             },
             hideui = {
                 order = 1,
                 name = "Hide UI on screenshot",
                 desc = "Enables / disables UI on screenshot. Does not apply to screenshot that was taken during combat",
                 type = "toggle",
-                set = function(_, val) database.global.general.hideui = val end,
-                get = function() return database.global.general.hideui end
+                set = function(_, val) Database.global.general.hideui = val end,
+                get = function() return Database.global.general.hideui end
             },
             names = {
                 order = 0,
@@ -255,8 +255,8 @@ function Screenshoter_LoadConfig()
                         name = "Enable Watermark",
                         desc = "Enables / disables the Watermark feature",
                         type = "toggle",
-                        set = function(_, val) database.global.watermark.enabled = val end,
-                        get = function() return database.global.watermark.enabled end
+                        set = function(_, val) Database.global.watermark.enabled = val end,
+                        get = function() return Database.global.watermark.enabled end
                     },
                     format = {
                         order = 1,
@@ -265,8 +265,8 @@ function Screenshoter_LoadConfig()
                         multiline = true,
                         desc = "Customize watermark format",
                         type = "input",
-                        set = function(_, val) database.global.watermark.format = val end,
-                        get = function() return database.global.watermark.format end
+                        set = function(_, val) Database.global.watermark.format = val end,
+                        get = function() return Database.global.watermark.format end
                     },
                     format_desc = {
                         order = 3,
@@ -312,8 +312,8 @@ function Screenshoter_LoadConfig()
                         name = "Enable Maximizer",
                         desc = "Enables / disables the Maximizer feature",
                         type = "toggle",
-                        set = function(_, val) database.global.maximizer.enabled = val end,
-                        get = function() return database.global.maximizer.enabled end
+                        set = function(_, val) Database.global.maximizer.enabled = val end,
+                        get = function() return Database.global.maximizer.enabled end
                     },
                     description = {
                         order = 1,
@@ -328,8 +328,8 @@ function Screenshoter_LoadConfig()
                         min = 2,
                         max = 10,
                         step = 1,
-                        set = function(_, val) database.global.maximizer.seconds = val end,
-                        get = function() return database.global.maximizer.seconds end
+                        set = function(_, val) Database.global.maximizer.seconds = val end,
+                        get = function() return Database.global.maximizer.seconds end
                     },
                     stw_desc = {
                         order = 3,
@@ -345,7 +345,7 @@ function Screenshoter_LoadConfig()
                 args = {
                     text = {
                         order = 0,
-                        name = table.concat(issues, "\n"),
+                        name = table.concat(Issues, "\n"),
                         type = "description"
                     },
                 }
