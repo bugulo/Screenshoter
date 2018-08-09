@@ -3,13 +3,6 @@
 ## Author: Michal "UareBugged" Šlesár
 ## Version: 1.5.0
 ## SavedVariables: SCR_CONFIG
-
-## X-Embeds: LibStub, Ace3
-
-#@no-lib-strip@
-Lib\LibStub\LibStub.lua
-Lib\AceDB-3.0\AceDB-3.0.xml
-Lib\AceDB-3.0\AceConfig-3.0.xml
-#@end-no-lib-strip@
+## Dependencies: Ace3, LibStub
 
 Screenshoter.lua

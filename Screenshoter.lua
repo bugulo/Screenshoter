@@ -1,5 +1,3 @@
-local hash = "ucjbUMhfzO"
-
 BINDING_HEADER_SCREENSHOT = "Screenshoter"
 
 BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
@@ -23,6 +21,12 @@ local cache =
     wasUiVisible = false,
     isScreenshoting = false
 }
+
+local AceConfig = LibStub("AceConfig-3.0")
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+local AceDB = LibStub("AceDB-3.0")
+
+local database
 
 local names = {
     --FRIENDLY NAMES
@@ -84,32 +88,34 @@ function cache.events:SCREENSHOT_SUCCEEDED()
 end
 
 function cache.events:VARIABLES_LOADED()
-    if SCR_CONFIG == nil then ResetSettings()
-    elseif SCR_CONFIG.hash ~= hash then Update()
-    end
+    local defaults = {
+        global = {
+            general = {
+                hideui = true,
+                enabled = true,
+            },
+            watermark = {
+                enabled = false,
+                format = "{char}\n{x}:{y} , {zone}",
+            },
+            maximizer = {
+                enabled = false, 
+                seconds = 3,
+            },
+            names = {
+                ['*'] = {
+                  enabled = false,
+                }
+            }
+        }
+    }
+
+    database = AceDB:New("SCR_CONFIG", defaults, true)
     LoadConfig()
 end
 
 for k in pairs(cache.events) do
     window:RegisterEvent(k);
-end
-
-function ResetSettings()
-    SCR_CONFIG = {}
-    SCR_CONFIG.hash = hash
-    SCR_CONFIG.quality = { hideui = true, enabled = true }
-    SCR_CONFIG.watermark = { enabled = false, format = "{char}\n{x}:{y} , {zone}" }
-    SCR_CONFIG.maximizer = { enabled = false, seconds = 3 }
-    SCR_CONFIG.names = {}
-
-    for key in ipairs(names) do
-        SCR_CONFIG.names[key] = false
-    end
-end
-
-function Update()
-    SCR_CONFIG.hash = hash
-    SCR_CONFIG.watermark = { enabled = false, format = "{char}\n{x}:{y} , {zone}" }
 end
 
 function PrepareNames()
@@ -125,15 +131,15 @@ function PrepareNames()
             name = cvar.name,
             desc = cvar.desc,
             type = "toggle",
-            set = function(_, val) SCR_CONFIG.names[key] = val end,
-            get = function() return SCR_CONFIG.names[key] end
+            set = function(_, val) database.global.names[key].enabled = val end,
+            get = function() return database.global.names[key].enabled end
         }
     end
     return args
 end
 
 function TakeScreenshot()
-    if cache.isScreenshoting or not SCR_CONFIG.quality.enabled then return end
+    if cache.isScreenshoting or not database.global.general.enabled then return end
 
     cache.isScreenshoting = true
     Start()
@@ -141,7 +147,7 @@ function TakeScreenshot()
 end
 
 function TakeScreenshot_Maximizer()
-    if cache.isScreenshoting or not SCR_CONFIG.maximizer.enabled or not SCR_CONFIG.quality.enabled then return end
+    if cache.isScreenshoting or not database.global.maximizer.enabled or not database.global.general.enabled then return end
 
     cache.isScreenshoting = true
     for key, cvar in ipairs(graphics) do
@@ -151,8 +157,8 @@ function TakeScreenshot_Maximizer()
 
     Start()
 
-    if SCR_CONFIG.maximizer.enabled then
-        C_Timer.After(SCR_CONFIG.maximizer.seconds, function() Screenshot() end)
+    if database.global.maximizer.enabled then
+        C_Timer.After(database.global.maximizer.seconds, function() Screenshot() end)
     end
 end
 
@@ -161,22 +167,22 @@ function Start()
         cache.names[key] = GetCVar(cvar.key)
     end
 
-    for key, value in ipairs(SCR_CONFIG.names) do
-        SetCVar(names[key].key, value)
+    for key, value in ipairs(database.global.names) do
+        SetCVar(names[key].key, value.enabled)
     end
 
     cache.wasUiVisible = UIParent:IsVisible()
-    if SCR_CONFIG.quality.hideui then
+    if database.global.general.hideui then
         UIParent:Hide()
     else
         UIParent:Show()
     end
 
-    if SCR_CONFIG.watermark.enabled then
+    if database.global.watermark.enabled then
         mapID = C_Map.GetBestMapForUnit("player")
         position = C_Map.GetPlayerMapPosition(mapID,"player")
 
-        result = SCR_CONFIG.watermark.format
+        result = database.global.watermark.format
         result = string.gsub(result, "{zone}", GetMinimapZoneText())
         result = string.gsub(result, "{char}", UnitName("player"))
         result = string.gsub(result, "{x}", format("%d", position.x * 100.0))
@@ -194,7 +200,7 @@ function Stop()
         SetCVar(names[key].key, value)
     end
 
-    if SCR_CONFIG.maximizer.enabled then
+    if database.global.maximizer.enabled then
         for key, value in ipairs(cache.graphics) do
             SetCVar(graphics[key].key, value)
         end
@@ -206,7 +212,7 @@ function Stop()
         UIParent:Hide()
     end
 
-    if SCR_CONFIG.watermark.enabled then
+    if database.global.watermark.enabled then
         watermark:Hide()
     end
 
@@ -214,7 +220,7 @@ function Stop()
 end
 
 function LoadConfig()
-    LibStub("AceConfig-3.0"):RegisterOptionsTable("Screenshoter", {
+    AceConfig:RegisterOptionsTable("Screenshoter", {
         type = "group",
         args = {
             enable = {
@@ -222,16 +228,16 @@ function LoadConfig()
                 name = "Enable",
                 desc = "Enables / disables the addon",
                 type = "toggle",
-                set = function(_, val) SCR_CONFIG.quality.enabled = val end,
-                get = function() return SCR_CONFIG.quality.enabled end
+                set = function(_, val) database.global.general.enabled = val end,
+                get = function() return database.global.general.enabled end
             },
             hideui = {
                 order = 1,
                 name = "Hide UI on screenshot",
                 desc = "Enables / disables UI on screenshot. Does not apply to screenshot that was taken during combat",
                 type = "toggle",
-                set = function(_, val) SCR_CONFIG.quality.hideui = val end,
-                get = function() return SCR_CONFIG.quality.hideui end
+                set = function(_, val) database.global.general.hideui = val end,
+                get = function() return database.global.general.hideui end
             },
             names = {
                 order = 0,
@@ -249,8 +255,8 @@ function LoadConfig()
                         name = "Enable Watermark",
                         desc = "Enables / disables the Watermark feature",
                         type = "toggle",
-                        set = function(_, val) SCR_CONFIG.watermark.enabled = val end,
-                        get = function() return SCR_CONFIG.watermark.enabled end
+                        set = function(_, val) database.global.watermark.enabled = val end,
+                        get = function() return database.global.watermark.enabled end
                     },
                     format = {
                         order = 1,
@@ -259,8 +265,8 @@ function LoadConfig()
                         multiline = true,
                         desc = "Customize watermark format",
                         type = "input",
-                        set = function(_, val) SCR_CONFIG.watermark.format = val end,
-                        get = function() return SCR_CONFIG.watermark.format end
+                        set = function(_, val) database.global.watermark.format = val end,
+                        get = function() return database.global.watermark.format end
                     },
                     format_desc = {
                         order = 3,
@@ -306,8 +312,8 @@ function LoadConfig()
                         name = "Enable Maximizer",
                         desc = "Enables / disables the Maximizer feature",
                         type = "toggle",
-                        set = function(_, val) SCR_CONFIG.maximizer.enabled = val end,
-                        get = function() return SCR_CONFIG.maximizer.enabled end
+                        set = function(_, val) database.global.maximizer.enabled = val end,
+                        get = function() return database.global.maximizer.enabled end
                     },
                     description = {
                         order = 1,
@@ -322,8 +328,8 @@ function LoadConfig()
                         min = 2,
                         max = 10,
                         step = 1,
-                        set = function(_, val) SCR_CONFIG.maximizer.seconds = val end,
-                        get = function() return SCR_CONFIG.maximizer.seconds end
+                        set = function(_, val) database.global.maximizer.seconds = val end,
+                        get = function() return database.global.maximizer.seconds end
                     },
                     stw_desc = {
                         order = 3,
@@ -346,5 +352,5 @@ function LoadConfig()
             }
         }
     })
-    LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Screenshoter", "Screenshoter")
+    AceConfigDialog:AddToBlizOptions("Screenshoter", "Screenshoter")
 end
