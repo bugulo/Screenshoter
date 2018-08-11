@@ -3,20 +3,34 @@ BINDING_HEADER_SCREENSHOT = "Screenshoter"
 BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
 BINDING_NAME_SCREENSHOTER_TAKE_MAXIMIZER = "Take screenshot with Maximizer"
 
+local AceAddon = LibStub("AceAddon-3.0")
 local AceConfig = LibStub("AceConfig-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceDB = LibStub("AceDB-3.0")
 
-local Cache =
-{
-    Events = {},
-    Names = {},
-    Graphics = {},
-    UIState = false,
-    IsScreenshoting = false
-}
+Screenshoter = AceAddon:NewAddon("Screenshoter", "AceEvent-3.0")
 
-local Database
+local defaults = {
+    global = {
+        general = {
+            hideui = true,
+            enabled = true,
+        },
+        watermark = {
+            enabled = false,
+            format = "{char}\n{x}:{y} , {zone}",
+        },
+        maximizer = {
+            enabled = false,
+            seconds = 3,
+        },
+        names = {
+            ['*'] = {
+                enabled = false,
+            }
+        }
+    }
+}
 
 local Names = {
     --FRIENDLY NAMES
@@ -63,52 +77,28 @@ local Graphics = {
     { key = "ffxGlow", value = "1" },
 }
 
+function Screenshoter:OnInitialize()
+    self.Database = AceDB:New("ScreenshoterDB", defaults, true)
+    self.Cache = {
+        Events = {},
+        Names = {},
+        Graphics = {},
+        UIState = false,
+        IsScreenshoting = false
+    }
+
+    self:RegisterEvent("SCREENSHOT_SUCCEEDED", "Stop")
+
+    self:LoadConfig()
+end
+
 local Issues = {
     "- Possible incompatibility with some addons",
     "- Some name options may not be available in settings yet",
     "- Maximizer is not changing texture resolution yet"
 }
 
-Screenshoter_EventFrame:SetScript("OnEvent", function(self, event, ...)
-    Cache.Events[event](self, ...);
-end);
-
-function Cache.Events:SCREENSHOT_SUCCEEDED()
-    Screenshoter_Stop()
-end
-
-function Cache.Events:VARIABLES_LOADED()
-    local defaults = {
-        global = {
-            general = {
-                hideui = true,
-                enabled = true,
-            },
-            watermark = {
-                enabled = false,
-                format = "{char}\n{x}:{y} , {zone}",
-            },
-            maximizer = {
-                enabled = false, 
-                seconds = 3,
-            },
-            names = {
-                ['*'] = {
-                  enabled = false,
-                }
-            }
-        }
-    }
-
-    Database = AceDB:New("ScreenshoterDB", defaults, true)
-    Screenshoter_LoadConfig()
-end
-
-for k in pairs(Cache.Events) do
-    Screenshoter_EventFrame:RegisterEvent(k);
-end
-
-function Screenshoter_PrepareNames()
+function Screenshoter:PrepareNames()
     local args = {}
     args.description = {
         order = 0,
@@ -121,58 +111,58 @@ function Screenshoter_PrepareNames()
             name = cvar.name,
             desc = cvar.desc,
             type = "toggle",
-            set = function(_, val) Database.global.names[key].enabled = val end,
-            get = function() return Database.global.names[key].enabled end
+            set = function(_, val) self.Database.global.names[key].enabled = val end,
+            get = function() return self.Database.global.names[key].enabled end
         }
     end
     return args
 end
 
-function Screenshoter_Take()
-    if Cache.IsScreenshoting or not Database.global.general.enabled then return end
+function Screenshoter:Take()
+    if self.Cache.IsScreenshoting or not self.Database.global.general.enabled then return end
 
-    Cache.IsScreenshoting = true
-    Screenshoter_Start()
+    self.Cache.IsScreenshoting = true
+    self:Start()
     Screenshot()
 end
 
-function Screenshoter_Maximizer()
-    if Cache.IsScreenshoting or not Database.global.maximizer.enabled or not Database.global.general.enabled then return end
+function Screenshoter:Maximizer()
+    if self.Cache.IsScreenshoting or not self.Database.global.maximizer.enabled or not self.Database.global.general.enabled then return end
 
-    Cache.IsScreenshoting = true
+    self.Cache.IsScreenshoting = true
     for key, cvar in ipairs(Graphics) do
-        Cache.Graphics[key] = GetCVar(cvar.key)
+        self.Cache.Graphics[key] = GetCVar(cvar.key)
         SetCVar(cvar.key, cvar.value)
     end
 
-    Screenshoter_Start()
+    self:Start()
 
-    if Database.global.maximizer.enabled then
-        C_Timer.After(Database.global.maximizer.seconds, function() Screenshot() end)
+    if self.Database.global.maximizer.enabled then
+        C_Timer.After(self.Database.global.maximizer.seconds, function() Screenshot() end)
     end
 end
 
-function Screenshoter_Start()
+function Screenshoter:Start()
     for key, cvar in ipairs(Names) do
-        Cache.Names[key] = GetCVar(cvar.key)
+        self.Cache.Names[key] = GetCVar(cvar.key)
     end
 
-    for key, value in ipairs(Database.global.names) do
+    for key, value in ipairs(self.Database.global.names) do
         SetCVar(Names[key].key, value.enabled)
     end
 
-    Cache.UIState = UIParent:IsVisible()
-    if Database.global.general.hideui then
+    self.Cache.UIState = UIParent:IsVisible()
+    if self.Database.global.general.hideui then
         UIParent:Hide()
     else
         UIParent:Show()
     end
 
-    if Database.global.watermark.enabled then
-        mapID = C_Map.GetBestMapForUnit("player")
-        position = C_Map.GetPlayerMapPosition(mapID,"player")
+    if self.Database.global.watermark.enabled then
+        local mapID = C_Map.GetBestMapForUnit("player")
+        local position = C_Map.GetPlayerMapPosition(mapID, "player")
 
-        result = Database.global.watermark.format
+        local result = self.Database.global.watermark.format
         result = string.gsub(result, "{zone}", GetMinimapZoneText())
         result = string.gsub(result, "{char}", UnitName("player"))
         result = string.gsub(result, "{x}", format("%d", position.x * 100.0))
@@ -183,33 +173,33 @@ function Screenshoter_Start()
     end
 end
 
-function Screenshoter_Stop()
-    if not Cache.IsScreenshoting then return end
+function Screenshoter:Stop()
+    if not self.Cache.IsScreenshoting then return end
 
-    for key, value in ipairs(Cache.Names) do
+    for key, value in ipairs(self.Cache.Names) do
         SetCVar(Names[key].key, value)
     end
 
-    if Database.global.maximizer.enabled then
-        for key, value in ipairs(Cache.Graphics) do
+    if self.Database.global.maximizer.enabled then
+        for key, value in ipairs(self.Cache.Graphics) do
             SetCVar(Graphics[key].key, value)
         end
     end
 
-    if Cache.UIState then
+    if self.Cache.UIState then
         UIParent:Show()
     else
         UIParent:Hide()
     end
 
-    if Database.global.watermark.enabled then
+    if self.Database.global.watermark.enabled then
         Screenshoter_Watermark_Text:Hide()
     end
 
-    Cache.IsScreenshoting = false
+    self.Cache.IsScreenshoting = false
 end
 
-function Screenshoter_LoadConfig()
+function Screenshoter:LoadConfig()
     AceConfig:RegisterOptionsTable("Screenshoter", {
         type = "group",
         args = {
@@ -218,22 +208,22 @@ function Screenshoter_LoadConfig()
                 name = "Enable",
                 desc = "Enables / disables the addon",
                 type = "toggle",
-                set = function(_, val) Database.global.general.enabled = val end,
-                get = function() return Database.global.general.enabled end
+                set = function(_, val) self.Database.global.general.enabled = val end,
+                get = function() return self.Database.global.general.enabled end
             },
             hideui = {
                 order = 1,
                 name = "Hide UI on screenshot",
                 desc = "Enables / disables UI on screenshot. Does not apply to screenshot that was taken during combat",
                 type = "toggle",
-                set = function(_, val) Database.global.general.hideui = val end,
-                get = function() return Database.global.general.hideui end
+                set = function(_, val) self.Database.global.general.hideui = val end,
+                get = function() return self.Database.global.general.hideui end
             },
             names = {
                 order = 0,
                 name = "Names",
                 type = "group",
-                args = Screenshoter_PrepareNames()
+                args = self:PrepareNames()
             },
             watermark = {
                 order = 1,
@@ -245,8 +235,8 @@ function Screenshoter_LoadConfig()
                         name = "Enable Watermark",
                         desc = "Enables / disables the Watermark feature",
                         type = "toggle",
-                        set = function(_, val) Database.global.watermark.enabled = val end,
-                        get = function() return Database.global.watermark.enabled end
+                        set = function(_, val) self.Database.global.watermark.enabled = val end,
+                        get = function() return self.Database.global.watermark.enabled end
                     },
                     format = {
                         order = 1,
@@ -255,8 +245,8 @@ function Screenshoter_LoadConfig()
                         multiline = true,
                         desc = "Customize watermark format",
                         type = "input",
-                        set = function(_, val) Database.global.watermark.format = val end,
-                        get = function() return Database.global.watermark.format end
+                        set = function(_, val) self.Database.global.watermark.format = val end,
+                        get = function() return self.Database.global.watermark.format end
                     },
                     format_desc = {
                         order = 3,
@@ -275,8 +265,8 @@ function Screenshoter_LoadConfig()
                         name = "Enable Maximizer",
                         desc = "Enables / disables the Maximizer feature",
                         type = "toggle",
-                        set = function(_, val) Database.global.maximizer.enabled = val end,
-                        get = function() return Database.global.maximizer.enabled end
+                        set = function(_, val) self.Database.global.maximizer.enabled = val end,
+                        get = function() return self.Database.global.maximizer.enabled end
                     },
                     description = {
                         order = 1,
@@ -291,8 +281,8 @@ function Screenshoter_LoadConfig()
                         min = 2,
                         max = 10,
                         step = 1,
-                        set = function(_, val) Database.global.maximizer.seconds = val end,
-                        get = function() return Database.global.maximizer.seconds end
+                        set = function(_, val) self.Database.global.maximizer.seconds = val end,
+                        get = function() return self.Database.global.maximizer.seconds end
                     },
                     stw_desc = {
                         order = 3,

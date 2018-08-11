@@ -1,6 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
-	<Frame name="Screenshoter_EventFrame"/>
     <Frame name="Screenshoter_Watermark">
 		<Size x="200" y="100"/>
 		<Anchors>

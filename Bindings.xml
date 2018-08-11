@@ -1,8 +1,8 @@
 <Bindings>
     <Binding name="SCREENSHOTER_TAKE" category="Screenshoter">
-        Screenshoter_Take();
+        LibStub("AceAddon-3.0"):GetAddon("Screenshoter"):Take();
     </Binding>
     <Binding name="SCREENSHOTER_TAKE_MAXIMIZER" category="Screenshoter">
-        Screenshoter_Maximizer();
+        LibStub("AceAddon-3.0"):GetAddon("Screenshoter"):Maximizer();
     </Binding>
 </Bindings>

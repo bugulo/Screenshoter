@@ -1,7 +1,7 @@
 ## Interface: 80000
 ## Title: Screenshoter
 ## Author: Michal "UareBugged" Šlesár
-## Version: 1.5.0
+## Version: 1.5.1
 ## SavedVariables: ScreenshoterDB
 
 embeds.xml
