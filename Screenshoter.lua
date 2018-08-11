@@ -8,7 +8,7 @@ local AceConfig = LibStub("AceConfig-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceDB = LibStub("AceDB-3.0")
 
-Screenshoter = AceAddon:NewAddon("Screenshoter", "AceEvent-3.0")
+local Screenshoter = AceAddon:NewAddon("Screenshoter", "AceEvent-3.0")
 
 local defaults = {
     global = {
