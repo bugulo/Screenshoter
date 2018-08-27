@@ -15,6 +15,7 @@ local defaults = {
         general = {
             hideui = true,
             enabled = true,
+            hide_character = false
         },
         watermark = {
             enabled = false,
@@ -158,6 +159,10 @@ function Screenshoter:Start()
         UIParent:Show()
     end
 
+    if self.Database.global.general.hide_character then
+        ConsoleExec("showplayer 0")
+    end
+
     if self.Database.global.watermark.enabled then
         local mapID = C_Map.GetBestMapForUnit("player")
         local position = C_Map.GetPlayerMapPosition(mapID, "player")
@@ -192,6 +197,10 @@ function Screenshoter:Stop()
         UIParent:Hide()
     end
 
+    if self.Database.global.general.hide_character then
+        ConsoleExec("showplayer 1")
+    end
+
     if self.Database.global.watermark.enabled then
         Screenshoter_Watermark_Text:Hide()
     end
@@ -219,8 +228,16 @@ function Screenshoter:LoadConfig()
                 set = function(_, val) self.Database.global.general.hideui = val end,
                 get = function() return self.Database.global.general.hideui end
             },
+            hide_character = {
+                order = 2,
+                name = "Hide character on screenshot",
+                desc = "Hide / show character on screenshot",
+                type = "toggle",
+                set = function(_, val) self.Database.global.general.hide_character = val end,
+                get = function() return self.Database.global.general.hide_character end
+            },
             names = {
-                order = 0,
+                order = 3,
                 name = "Names",
                 type = "group",
                 args = self:PrepareNames()
