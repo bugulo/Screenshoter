@@ -2,8 +2,6 @@
 ## Title: Screenshoter
 ## Author: @project-author@
 ## Version: @project-version@
-## SavedVariables: GrindonDB
-
 ## SavedVariables: ScreenshoterDB
 
 embeds.xml
