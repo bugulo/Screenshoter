@@ -1,7 +1,9 @@
-## Interface: 80000
+## Interface: 80100
 ## Title: Screenshoter
-## Author: Michal "UareBugged" Šlesár
-## Version: 1.5.1
+## Author: @project-author@
+## Version: @project-version@
+## SavedVariables: GrindonDB
+
 ## SavedVariables: ScreenshoterDB
 
 embeds.xml
