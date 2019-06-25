@@ -1,7 +1,7 @@
 ## Interface: 80200
 ## Title: Screenshoter
-## Author: Michal Šlesár
-## Version: v1.5.3
+## Author: @project-author@
+## Version: @project-version@
 ## SavedVariables: ScreenshoterDB
 
 Embeds.xml
