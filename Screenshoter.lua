@@ -109,10 +109,7 @@ end
 function Screenshoter:Start()
     for key, cvar in ipairs(names) do
         self.cache.names[key] = GetCVar(cvar.key)
-    end
-
-    for key, value in ipairs(self.database.names) do
-        SetCVar(names[key].key, value.enabled)
+        SetCVar(cvar.key, self.database.names[key].enabled)
     end
 
     self.cache.uistate = UIParent:IsVisible()
