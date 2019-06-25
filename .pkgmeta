@@ -5,8 +5,14 @@ externals:
     Libs/LibStub:
         url: svn://svn.wowace.com/wow/libstub/mainline/trunk
         tag: latest
+    Libs/CallbackHandler-1.0:
+        url: svn://svn.wowace.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
+        tag: latest
     Libs/Ace3/AceAddon-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceAddon-3.0
+        tag: latest
+    Libs/Ace3/AceGUI-3.0:
+        url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
         tag: latest
     Libs/Ace3/AceConfig-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConfig-3.0
@@ -17,3 +23,4 @@ externals:
     Libs/Ace3/AceEvent-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceEvent-3.0
         tag: latest
+        

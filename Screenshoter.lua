@@ -1,20 +1,10 @@
-BINDING_HEADER_SCREENSHOT = "Screenshoter"
-
-BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
-BINDING_NAME_SCREENSHOTER_TAKE_MAXIMIZER = "Take screenshot with Maximizer"
-
-local AceAddon = LibStub("AceAddon-3.0")
-local AceConfig = LibStub("AceConfig-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local AceDB = LibStub("AceDB-3.0")
-
-local Screenshoter = AceAddon:NewAddon("Screenshoter", "AceEvent-3.0")
+local Screenshoter = LibStub("AceAddon-3.0"):NewAddon("Screenshoter", "AceEvent-3.0")
 
 local defaults = {
     global = {
         general = {
-            hideui = true,
             enabled = true,
+            hideui = true,
             hide_character = false
         },
         watermark = {
@@ -33,59 +23,58 @@ local defaults = {
     }
 }
 
-local Names = {
+local names = {
     --FRIENDLY NAMES
-    { key = "UnitNameFriendlyPlayerName", name = "Friendly Player Names", desc = "Toggle Friendly Player Names" },
-    { key = "UnitNameFriendlyPetName", name = "Friendly Pet Names", desc = "Toggle Friendly Pet Names" },
-    { key = "UnitNameFriendlySpecialNPCName", name = "Friendly Special NPC Names", desc = "Toggle Friendly Special NPC Names" },
-    { key = "UnitNameFriendlyTotemName", name = "Friendly Totem Names", desc = "Toggle Friendly Totem Names" },
-    { key = "UnitNameFriendlyGuardianName", name = "Friendly Guardian Names", desc = "Toggle Friendly Guardian Names"
-    },
+    {key="UnitNameFriendlyPlayerName",      name="Friendly Player Names"},
+    {key="UnitNameFriendlyPetName",         name="Friendly Pet Names"},
+    {key="UnitNameFriendlySpecialNPCName",  name="Friendly Special NPC Names"},
+    {key="UnitNameFriendlyTotemName",       name="Friendly Totem Names"},
+    {key="UnitNameFriendlyGuardianName",    name="Friendly Guardian Names"},
     --ENEMY NAMES
-    { key = "UnitNameEnemyPlayerName", name = "Enemy Player Names", desc = "Toggle Enemy Player Names" },
-    { key = "UnitNameEnemyPetName", name = "Enemy Pet Names", desc = "Toggle Enemy Pet Names" },
-    { key = "UnitNameEnemyTotemName", name = "Enemy Totem Names", desc = "Toggle Enemy Totem Names" },
-    { key = "UnitNameEnemyGuardianName", name = "Enemy Guardian Names", desc = "Toggle Enemy Guardian Names" },
+    {key="UnitNameEnemyPlayerName",         name="Enemy Player Names"},
+    {key="UnitNameEnemyPetName",            name="Enemy Pet Names"},
+    {key="UnitNameEnemyTotemName",          name="Enemy Totem Names"},
+    {key="UnitNameEnemyGuardianName",       name="Enemy Guardian Names"},
     --MISC
-    { key = "UnitNameGuildTitle", name = "Guild Titles", desc = "Toggle Guild Titles in Player Names" },
-    { key = "UnitNameNonCombatCreatureName", name = "Non-Combat Creature Names", desc = "Toggle Non-Combat Creature Names" },
-    { key = "UnitNameNPC", name = "NPC Names", desc = "Toggle NPC Names" },
-    { key = "UnitNameOwn", name = "Own Name", desc = "Toggle Own Name" },
-    { key = "UnitNamePlayerGuild", name = "Guild Tags", desc = "Toggle Guild Tags" },
-    { key = "UnitNamePlayerPVPTitle", name = "PVP Titles", desc = "Toggle PVP Titles" },
-    { key = "UnitNameInteractiveNPC", name = "Interactive NPC Names", desc = "Toggle Interactive NPC Names" }
+    {key="UnitNameGuildTitle",              name="Guild Titles"},
+    {key="UnitNameNonCombatCreatureName",   name="Non-Combat Creature Names"},
+    {key="UnitNameNPC",                     name="NPC Names"},
+    {key="UnitNameOwn",                     name="Own Name"},
+    {key="UnitNamePlayerGuild",             name="Guild Tags"},
+    {key="UnitNamePlayerPVPTitle",          name="PVP Titles"},
+    {key="UnitNameInteractiveNPC",          name="Interactive NPC Names"}
 }
 
-local Graphics = {
+local graphics = {
     --DISPLAY
-    { key = "MSAAQuality", value = "3" },
+    {key="MSAAQuality",                 value="3"},
     --TEXTURES
-    { key = "graphicsTextureFiltering", value = "6" },
-    { key = "graphicsProjectedTextures", value = "2" },
+    {key="graphicsTextureFiltering",    value="6"},
+    {key="graphicsProjectedTextures",   value="2"},
     --ENVIROMENT
-    { key = "graphicsViewDistance", value = "10" },
-    { key = "graphicsEnvironmentDetail", value = "10" },
-    { key = "graphicsGroundClutter", value = "10" },
+    {key="graphicsViewDistance",        value="10"},
+    {key="graphicsEnvironmentDetail",   value="10"},
+    {key="graphicsGroundClutter",       value="10"},
     --EFFECTS
-    { key = "graphicsShadowQuality", value = "6" },
-    { key = "graphicsLiquidDetail", value = "4" },
-    { key = "graphicsSunshafts", value = "3" },
-    { key = "graphicsParticleDensity", value = "4" },
-    { key = "graphicsSSAO", value = "4" },
-    { key = "graphicsDepthEffects", value = "4" },
-    { key = "graphicsLightingQuality", value = "3" },
-    { key = "graphicsOutlineMode", value = "3" },
-    { key = "ffxGlow", value = "1" },
+    {key="graphicsShadowQuality",       value="6"},
+    {key="graphicsLiquidDetail",        value="4"},
+    {key="graphicsSunshafts",           value="3"},
+    {key="graphicsParticleDensity",     value="4"},
+    {key="graphicsSSAO",                value="4"},
+    {key="graphicsDepthEffects",        value="4"},
+    {key="graphicsLightingQuality",     value="3"},
+    {key="graphicsOutlineMode",         value="3"},
+    {key="ffxGlow",                     value="1"},
 }
 
 function Screenshoter:OnInitialize()
-    self.Database = AceDB:New("ScreenshoterDB", defaults, true)
-    self.Cache = {
-        Events = {},
-        Names = {},
-        Graphics = {},
-        UIState = false,
-        IsScreenshoting = false
+    self.database = LibStub("AceDB-3.0"):New("ScreenshoterDB", defaults, true).global
+
+    self.cache = {
+        working = false,
+        uistate = false,
+        names = {},
+        graphics = {}
     }
 
     self:RegisterEvent("SCREENSHOT_SUCCEEDED", "Stop")
@@ -93,81 +82,56 @@ function Screenshoter:OnInitialize()
     self:LoadConfig()
 end
 
-local Issues = {
-    "- Possible incompatibility with some addons",
-    "- Some name options may not be available in settings yet",
-    "- Maximizer is not changing texture resolution yet"
-}
-
-function Screenshoter:PrepareNames()
-    local args = {}
-    args.description = {
-        order = 0,
-        name = "You can select which names you want to have on screenshot\n",
-        type = "description"
-    }
-    for key, cvar in ipairs(Names) do
-        args[cvar.key] = {
-            order = key,
-            name = cvar.name,
-            desc = cvar.desc,
-            type = "toggle",
-            set = function(_, val) self.Database.global.names[key].enabled = val end,
-            get = function() return self.Database.global.names[key].enabled end
-        }
-    end
-    return args
-end
-
 function Screenshoter:Take()
-    if self.Cache.IsScreenshoting or not self.Database.global.general.enabled then return end
+    if self.cache.working or not self.database.general.enabled then return end
 
-    self.Cache.IsScreenshoting = true
+    self.cache.working = true
+
     self:Start()
     Screenshot()
 end
 
 function Screenshoter:Maximizer()
-    if self.Cache.IsScreenshoting or not self.Database.global.maximizer.enabled or not self.Database.global.general.enabled then return end
+    if self.cache.working or not self.database.maximizer.enabled or not self.database.general.enabled then return end
 
-    self.Cache.IsScreenshoting = true
-    for key, cvar in ipairs(Graphics) do
-        self.Cache.Graphics[key] = GetCVar(cvar.key)
+    self.cache.working = true
+
+    for key, cvar in ipairs(graphics) do
+        self.cache.graphics[key] = GetCVar(cvar.key)
         SetCVar(cvar.key, cvar.value)
     end
 
     self:Start()
 
-    if self.Database.global.maximizer.enabled then
-        C_Timer.After(self.Database.global.maximizer.seconds, function() Screenshot() end)
-    end
+    C_Timer.After(self.database.maximizer.seconds, function() Screenshot() end)
 end
 
 function Screenshoter:Start()
-    for key, cvar in ipairs(Names) do
-        self.Cache.Names[key] = GetCVar(cvar.key)
+    for key, cvar in ipairs(names) do
+        self.cache.names[key] = GetCVar(cvar.key)
     end
 
-    for key, value in ipairs(self.Database.global.names) do
-        SetCVar(Names[key].key, value.enabled)
+    for key, value in ipairs(self.database.names) do
+        SetCVar(names[key].key, value.enabled)
     end
 
-    self.Cache.UIState = UIParent:IsVisible()
-    if self.Database.global.general.hideui then
+    self.cache.uistate = UIParent:IsVisible()
+
+    if self.database.general.hideui then
         UIParent:Hide()
     else
         UIParent:Show()
     end
 
-    if self.Database.global.general.hide_character then
+    if self.database.general.hide_character then
         ConsoleExec("showplayer 0")
     end
 
-    if self.Database.global.watermark.enabled then
+    if self.database.watermark.enabled then
         local mapID = C_Map.GetBestMapForUnit("player")
         local position = C_Map.GetPlayerMapPosition(mapID, "player")
 
-        local result = self.Database.global.watermark.format
+        local result = self.database.watermark.format
         result = string.gsub(result, "{zone}", GetMinimapZoneText())
         result = string.gsub(result, "{char}", UnitName("player"))
         result = string.gsub(result, "{x}", format("%d", position.x * 100.0))
@@ -179,68 +143,84 @@ function Screenshoter:Start()
 end
 
 function Screenshoter:Stop()
-    if not self.Cache.IsScreenshoting then return end
+    if not self.cache.working then return end
 
-    for key, value in ipairs(self.Cache.Names) do
-        SetCVar(Names[key].key, value)
+    for key, value in ipairs(self.cache.names) do
+        SetCVar(names[key].key, value)
     end
 
-    if self.Database.global.maximizer.enabled then
-        for key, value in ipairs(self.Cache.Graphics) do
-            SetCVar(Graphics[key].key, value)
+    if self.database.maximizer.enabled then
+        for key, value in ipairs(self.cache.graphics) do
+            SetCVar(graphics[key].key, value)
         end
     end
 
-    if self.Cache.UIState then
+    if self.cache.uistate then
         UIParent:Show()
     else
         UIParent:Hide()
     end
 
-    if self.Database.global.general.hide_character then
+    if self.database.general.hide_character then
         ConsoleExec("showplayer 1")
     end
 
-    if self.Database.global.watermark.enabled then
+    if self.database.watermark.enabled then
         Screenshoter_Watermark_Text:Hide()
     end
 
-    self.Cache.IsScreenshoting = false
+    self.cache.working = false
 end
 
 function Screenshoter:LoadConfig()
-    AceConfig:RegisterOptionsTable("Screenshoter", {
+    local args = {
+        description = {
+            order = 0,
+            name = "You can select which names you want to have on screenshot\n",
+            type = "description"
+        }
+    }
+
+    for key, cvar in ipairs(names) do
+        args[cvar.key] = {
+            order = key,
+            name = cvar.name,
+            type = "toggle",
+            set = function(_, val) self.database.names[key].enabled = val end,
+            get = function() return self.database.names[key].enabled end
+        }
+    end
+
+    LibStub("AceConfig-3.0"):RegisterOptionsTable("Screenshoter", {
         type = "group",
         args = {
             enable = {
                 order = 0,
-                name = "Enable",
-                desc = "Enables / disables the addon",
+                name = "Enabled",
                 type = "toggle",
-                set = function(_, val) self.Database.global.general.enabled = val end,
-                get = function() return self.Database.global.general.enabled end
+                set = function(_, val) self.database.general.enabled = val end,
+                get = function() return self.database.general.enabled end
             },
             hideui = {
                 order = 1,
                 name = "Hide UI on screenshot",
-                desc = "Enables / disables UI on screenshot. Does not apply to screenshot that was taken during combat",
+                desc = "Does not work in/during combat",
                 type = "toggle",
-                set = function(_, val) self.Database.global.general.hideui = val end,
-                get = function() return self.Database.global.general.hideui end
+                set = function(_, val) self.database.general.hideui = val end,
+                get = function() return self.database.general.hideui end
             },
             hide_character = {
                 order = 2,
                 name = "Hide character on screenshot",
-                desc = "Hide / show character on screenshot",
                 type = "toggle",
-                set = function(_, val) self.Database.global.general.hide_character = val end,
-                get = function() return self.Database.global.general.hide_character end
+                set = function(_, val) self.database.general.hide_character = val end,
+                get = function() return self.database.general.hide_character end
             },
             names = {
                 order = 3,
                 name = "Names",
                 type = "group",
-                args = self:PrepareNames()
+                args = args
             },
             watermark = {
                 order = 1,
@@ -250,23 +230,21 @@ function Screenshoter:LoadConfig()
                     enabled = {
                         order = 0,
                         name = "Enable Watermark",
-                        desc = "Enables / disables the Watermark feature",
                         type = "toggle",
-                        set = function(_, val) self.Database.global.watermark.enabled = val end,
-                        get = function() return self.Database.global.watermark.enabled end
+                        set = function(_, val) self.database.watermark.enabled = val end,
+                        get = function() return self.database.watermark.enabled end
                     },
                     format = {
                         order = 1,
                         width = "full",
                         name = "Format",
                         multiline = true,
-                        desc = "Customize watermark format",
                         type = "input",
-                        set = function(_, val) self.Database.global.watermark.format = val end,
-                        get = function() return self.Database.global.watermark.format end
+                        set = function(_, val) self.database.watermark.format = val end,
+                        get = function() return self.database.watermark.format end
                     },
                     format_desc = {
-                        order = 3,
+                        order = 2,
                         name = "\nAvailable variables: \n\n {char} - Character`s name\n {x} - Position X\n {y} - Position Y\n {zone} - Zone",
                         type = "description"
                     },
@@ -280,10 +258,9 @@ function Screenshoter:LoadConfig()
                     enabled = {
                         order = 0,
                         name = "Enable Maximizer",
-                        desc = "Enables / disables the Maximizer feature",
                         type = "toggle",
-                        set = function(_, val) self.Database.global.maximizer.enabled = val end,
-                        get = function() return self.Database.global.maximizer.enabled end
+                        set = function(_, val) self.database.maximizer.enabled = val end,
+                        get = function() return self.database.maximizer.enabled end
                     },
                     description = {
                         order = 1,
@@ -298,8 +275,8 @@ function Screenshoter:LoadConfig()
                         min = 2,
                         max = 10,
                         step = 1,
-                        set = function(_, val) self.Database.global.maximizer.seconds = val end,
-                        get = function() return self.Database.global.maximizer.seconds end
+                        set = function(_, val) self.database.maximizer.seconds = val end,
+                        get = function() return self.database.maximizer.seconds end
                     },
                     stw_desc = {
                         order = 3,
@@ -316,7 +293,6 @@ function Screenshoter:LoadConfig()
                     quality = {
                         order = 0,
                         name = "Screenshot quality",
-                        desc = "Change screenshot quality",
                         type = "range",
                         min = 0,
                         max = 10,
@@ -327,27 +303,14 @@ function Screenshoter:LoadConfig()
                     imgformat = {
                         order = 1,
                         name = "Image format",
-                        desc = "Change image format",
                         type = "select",
                         values = { "jpg", "tga" },
                         set = function(_, val) SetCVar("screenshotFormat", val == 1 and "jpg" or "tga") end,
                         get = function() return GetCVar("screenshotFormat") == "jpg" and 1 or 2 end
                     }
                 }
-            },
-            issues = {
-                order = 4,
-                name = "Known/possible issues",
-                type = "group",
-                args = {
-                    text = {
-                        order = 0,
-                        name = table.concat(Issues, "\n"),
-                        type = "description"
-                    },
-                }
             }
         }
     })
-    AceConfigDialog:AddToBlizOptions("Screenshoter", "Screenshoter")
+    LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Screenshoter", "Screenshoter")
 end

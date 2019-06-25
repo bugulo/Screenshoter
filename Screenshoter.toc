@@ -1,10 +1,10 @@
 ## Interface: 80100
 ## Title: Screenshoter
-## Author: @project-author@
-## Version: @project-version@
+## Author: Michal Šlesár
+## Version: v1.5.3
 ## SavedVariables: ScreenshoterDB
 
-embeds.xml
+Embeds.xml
 Frames.xml
 
 Screenshoter.lua
