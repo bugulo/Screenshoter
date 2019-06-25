@@ -173,7 +173,7 @@ function Screenshoter:LoadConfig()
     local args = {
         description = {
             order = 0,
-            name = "You can select which names you want to have on screenshot\n",
+            name = "Select which names would you like to have visible on the screenshot\n",
             type = "description"
         }
     }
@@ -198,29 +198,59 @@ function Screenshoter:LoadConfig()
                 set = function(_, val) self.database.general.enabled = val end,
                 get = function() return self.database.general.enabled end
             },
-            hideui = {
+            general = {
                 order = 1,
-                name = "Hide UI on screenshot",
-                desc = "Does not work in/during combat",
-                type = "toggle",
-                set = function(_, val) self.database.general.hideui = val end,
-                get = function() return self.database.general.hideui end
-            },
-            hide_character = {
-                order = 2,
-                name = "Hide character on screenshot",
-                type = "toggle",
-                set = function(_, val) self.database.general.hide_character = val end,
-                get = function() return self.database.general.hide_character end
+                name = "General",
+                type = "group",
+                args = {
+                    hideui = {
+                        order = 0,
+                        name = "Hide UI on screenshot",
+                        desc = "Does not work in/during combat",
+                        type = "toggle",
+                        set = function(_, val) self.database.general.hideui = val end,
+                        get = function() return self.database.general.hideui end
+                    },
+                    hide_character = {
+                        order = 1,
+                        name = "Hide character on screenshot",
+                        type = "toggle",
+                        set = function(_, val) self.database.general.hide_character = val end,
+                        get = function() return self.database.general.hide_character end
+                    },
+                    header = {
+                        order = 2,
+                        name = "Quality",
+                        type = "header"
+                    },
+                    quality = {
+                        order = 3,
+                        name = "Quality",
+                        type = "range",
+                        min = 0,
+                        max = 10,
+                        step = 1,
+                        set = function(_, val) SetCVar("screenshotQuality", val) end,
+                        get = function() return tonumber(GetCVar("screenshotQuality")) end
+                    },
+                    format = {
+                        order = 4,
+                        name = "Format",
+                        type = "select",
+                        values = {"jpg", "tga"},
+                        set = function(_, val) SetCVar("screenshotFormat", val == 1 and "jpg" or "tga") end,
+                        get = function() return GetCVar("screenshotFormat") == "jpg" and 1 or 2 end
+                    }
+                }
             },
             names = {
-                order = 3,
+                order = 2,
                 name = "Names",
                 type = "group",
                 args = args
             },
             watermark = {
-                order = 1,
+                order = 3,
                 name = "Watermark",
                 type = "group",
                 args = {
@@ -231,8 +261,13 @@ function Screenshoter:LoadConfig()
                         set = function(_, val) self.database.watermark.enabled = val end,
                         get = function() return self.database.watermark.enabled end
                     },
-                    format = {
+                    header = {
                         order = 1,
+                        name = "Settings",
+                        type = "header"
+                    },
+                    format = {
+                        order = 2,
                         width = "full",
                         name = "Format",
                         multiline = true,
@@ -240,15 +275,15 @@ function Screenshoter:LoadConfig()
                         set = function(_, val) self.database.watermark.format = val end,
                         get = function() return self.database.watermark.format end
                     },
-                    format_desc = {
-                        order = 2,
+                    variables = {
+                        order = 3,
                         name = "\nAvailable variables: \n\n {char} - Character`s name\n {x} - Position X\n {y} - Position Y\n {zone} - Zone",
                         type = "description"
                     },
                 }
             },
             maximizer = {
-                order = 2,
+                order = 4,
                 name = "Maximizer",
                 type = "group",
                 args = {
@@ -259,51 +294,31 @@ function Screenshoter:LoadConfig()
                         set = function(_, val) self.database.maximizer.enabled = val end,
                         get = function() return self.database.maximizer.enabled end
                     },
-                    description = {
+                    header1 = {
                         order = 1,
-                        name = "\nNotice: Maximizer can maximize graphics settings just before taking screenshot to make it look awesome and revert these changes just after taking screenshot. It is mostly for players that want to make their screenshots beautiful even though they are playing on low or medium settings. If you want to enable this feature, you can simply check Enable option above this notice",
+                        name = "Description",
+                        type = "header"
+                    },
+                    description = {
+                        order = 2,
+                        name = "Maximizer can maximize your graphics settings just before taking the screenshot to make it look awesome and revert them immediately after. It is mostly for players that want to make their screenshots look beautiful even if they do not play on high graphic settings.",
                         type = "description"
                     },
+                    header2 = {
+                        order = 3,
+                        name = "Settings",
+                        type = "header"
+                    },
                     seconds = {
-                        order = 2,
+                        order = 4,
                         name = "Seconds to wait",
-                        desc = "Set how many seconds will Screenshoter wait before taking screenshot. This option is there because when you change some graphics settings, it takes some time before game is rendered in higher quality, so Screenshoter has to wait until all settings are visible",
+                        desc = "Set how many seconds will Screenshoter wait before taking the screenshot. This delay ensures that all graphics settings are applied and rendered.",
                         type = "range",
                         min = 2,
                         max = 10,
                         step = 1,
                         set = function(_, val) self.database.maximizer.seconds = val end,
                         get = function() return self.database.maximizer.seconds end
-                    },
-                    stw_desc = {
-                        order = 3,
-                        name = "\nSeconds to wait is option that will set how many seconds will Screenshoter wait before taking screenshot. If you don't have Maximizer enabled, screenshots are taken instantly. In Maximizer no, why? If you change any graphics settings, it takes some time before these changes are applied to your GPU and rendered. There has to be some 'wait time' that will ensure that all settings are applied and rendered before taking screenshots. Default 'wait time' is 3 seconds but you can change it as you want (from 2 seconds to 10 seconds)",
-                        type = "description"
-                    },
-                }
-            },
-            other = {
-                order = 3,
-                name = "Other",
-                type = "group",
-                args = {
-                    quality = {
-                        order = 0,
-                        name = "Screenshot quality",
-                        type = "range",
-                        min = 0,
-                        max = 10,
-                        step = 1,
-                        set = function(_, val) SetCVar("screenshotQuality", val) end,
-                        get = function() return tonumber(GetCVar("screenshotQuality")) end
-                    },
-                    imgformat = {
-                        order = 1,
-                        name = "Image format",
-                        type = "select",
-                        values = { "jpg", "tga" },
-                        set = function(_, val) SetCVar("screenshotFormat", val == 1 and "jpg" or "tga") end,
-                        get = function() return GetCVar("screenshotFormat") == "jpg" and 1 or 2 end
                     }
                 }
             }
