@@ -1,5 +1,4 @@
 package-as: Screenshoter
-enable-nolib-creation: no
 
 externals:
     Libs/LibStub:
