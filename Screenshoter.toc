@@ -1,4 +1,4 @@
-## Interface: 80100
+## Interface: 80200
 ## Title: Screenshoter
 ## Author: Michal Šlesár
 ## Version: v1.5.3
