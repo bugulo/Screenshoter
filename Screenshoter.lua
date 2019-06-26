@@ -1,3 +1,5 @@
+local Window = LibStub("LibWindow-1.1")
+
 local Screenshoter = LibStub("AceAddon-3.0"):NewAddon("Screenshoter", "AceEvent-3.0")
 
 local defaults = {
@@ -10,6 +12,17 @@ local defaults = {
         watermark = {
             enabled = false,
             format = "{char}\n{x}:{y} , {zone}",
+            transform = {
+                x = -10,
+                y = -10,
+                sizeX = 150,
+                sizeY = 50,
+                scale = 1,
+                point = "TOPRIGHT"
+            },
+            color = {r = 255, g = 255, b = 255, a = 1},
+            font = "Fonts\\FRIZQT__.TTF",
+            size = 10
         },
         maximizer = {
             enabled = false,
@@ -79,6 +92,7 @@ function Screenshoter:OnInitialize()
 
     self:RegisterEvent("SCREENSHOT_SUCCEEDED", "Stop")
 
+    self:LoadFrames()
     self:LoadConfig()
 end
 
@@ -134,8 +148,8 @@ function Screenshoter:Start()
         result = string.gsub(result, "{x}", format("%d", position.x * 100.0))
         result = string.gsub(result, "{y}", format("%d", position.y * 100.0))
 
-        Screenshoter_Watermark_Text:SetText(result)
-        Screenshoter_Watermark_Text:Show()
+        self:RedrawWatermark(result)
+        self:ShowWatermark(false)
     end
 end
 
@@ -163,10 +177,76 @@ function Screenshoter:Stop()
     end
 
     if self.database.watermark.enabled then
-        Screenshoter_Watermark_Text:Hide()
+        self:HideWatermark()
     end
 
     self.cache.working = false
+end
+
+function Screenshoter:ShowWatermark(background)
+    local watermark = self.frames.watermark
+
+    if background then 
+        watermark.background:Show() 
+    else
+        watermark.background:Hide() 
+    end
+
+    watermark:Show()
+end
+
+function Screenshoter:HideWatermark()
+    local watermark = self.frames.watermark
+
+    watermark.background:Hide()
+    watermark:Hide()
+end
+
+function Screenshoter:RedrawWatermark(text)
+    local watermark = self.frames.watermark
+
+    local _, _, flags = watermark.text:GetFont() 
+    watermark.text:SetFont(self.database.watermark.font, self.database.watermark.size, flags)
+
+    local color = self.database.watermark.color
+    watermark.text:SetTextColor(color.r, color.g, color.b, color.a)
+
+    if text ~= nil then
+        watermark.text:SetText(text)
+    end
+
+    watermark:SetSize(watermark.text:GetStringWidth(), watermark.text:GetStringHeight())
+end
+
+function Screenshoter:LoadFrames()
+    local watermark = CreateFrame("Frame", nil)
+    watermark:SetFrameStrata("DIALOG")
+
+    watermark.background = watermark:CreateTexture(nil, "OVERLAY")
+    watermark.background:SetColorTexture(0, 0, 0, 0.5)
+    watermark.background:SetAllPoints(watermark)
+    watermark.background:Hide()
+
+    watermark.text = watermark:CreateFontString(nil, "OVERLAY", "GameFontGreen")
+    watermark.text:SetAllPoints(watermark)
+
+    Window.RegisterConfig(watermark, self.database.watermark.transform)
+    Window.RestorePosition(watermark)
+
+    watermark:Hide()
+    watermark:SetClampedToScreen(true)
+    watermark:EnableMouse(true)
+    watermark:SetMovable(true)
+    watermark:RegisterForDrag("LeftButton")
+    watermark:SetScript("OnDragStart", function() watermark:StartMoving() end)
+    watermark:SetScript("OnDragStop", function()
+        watermark:StopMovingOrSizing()
+        Window.SavePosition(watermark)
+    end)
+
+    self.frames = {
+        watermark = watermark
+    }
 end
 
 function Screenshoter:LoadConfig()
@@ -261,25 +341,89 @@ function Screenshoter:LoadConfig()
                         set = function(_, val) self.database.watermark.enabled = val end,
                         get = function() return self.database.watermark.enabled end
                     },
-                    header = {
+                    move = {
                         order = 1,
+                        type = "execute",
+                        name = "Toggle widget",
+                        func = function() 
+                            local watermark = self.frames.watermark
+
+                            if watermark:IsShown() then
+                                self:HideWatermark()
+                            else 
+                                self:RedrawWatermark(self.database.watermark.format)
+                                self:ShowWatermark(true)
+                            end
+                        end
+                    },
+                    header1 = {
+                        order = 2,
                         name = "Settings",
                         type = "header"
                     },
                     format = {
-                        order = 2,
+                        order = 3,
                         width = "full",
                         name = "Format",
                         multiline = true,
                         type = "input",
-                        set = function(_, val) self.database.watermark.format = val end,
+                        set = function(_, val) 
+                            self:RedrawWatermark(val)
+                            self.database.watermark.format = val 
+                        end,
                         get = function() return self.database.watermark.format end
                     },
                     variables = {
-                        order = 3,
+                        order = 4,
                         name = "\nAvailable variables: \n\n {char} - Character`s name\n {x} - Position X\n {y} - Position Y\n {zone} - Zone",
                         type = "description"
                     },
+                    header2 = {
+                        order = 5,
+                        name = "Customization",
+                        type = "header"
+                    },
+                    size = {
+                        order = 6,
+                        name = "Size",
+                        type = "range",
+                        min = 8,
+                        max = 20,
+                        step = 1,
+                        set = function(_, val) 
+                            self.database.watermark.size = val 
+                            self:RedrawWatermark(nil)
+                        end,
+                        get = function() return self.database.watermark.size end
+                    },
+                    font = {
+                        order = 7,
+                        name = "Font",
+                        type = "select",
+                        values = {
+                            ["Fonts\\FRIZQT__.TTF"] = "Frizqt"
+                        },
+                        set = function(_, val) 
+                            self.database.watermark.font = val 
+                            self:RedrawWatermark(nil)
+                        end,
+                        get = function() return self.database.watermark.font end
+                    },
+                    color = {   
+                        order = 8,
+                        name = "Color",
+                        type = "color",
+                        hasAlpha = true,
+                        set = function(_, r, g, b, a)
+                            if r == nil or g == nil or b == nil or a == nil then return end
+                            self.database.watermark.color = {r = r, g = g, b = b, a = a}
+                            self:RedrawWatermark(nil)
+                        end,
+                        get = function()
+                            local color = self.database.watermark.color
+                            return color.r , color.g, color.b, color.a
+                        end
+                    }
                 }
             },
             maximizer = {
