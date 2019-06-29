@@ -1,3 +1,6 @@
+BINDING_NAME_SCREENSHOTER_TAKE = "Take screenshot"
+BINDING_NAME_SCREENSHOTER_TAKE_MAXIMIZER = "Take screenshot with Maximizer" 
+
 local Window = LibStub("LibWindow-1.1")
 
 local Screenshoter = LibStub("AceAddon-3.0"):NewAddon("Screenshoter", "AceEvent-3.0")
@@ -298,13 +301,32 @@ function Screenshoter:LoadConfig()
                         set = function(_, val) self.database.general.hide_character = val end,
                         get = function() return self.database.general.hide_character end
                     },
-                    header = {
+                    header1 = {
                         order = 2,
+                        name = "Key bindings",
+                        type = "header"
+                    },
+                    take = {
+                        order = 3,
+                        name = "Take screenshot",
+                        type = "keybinding",
+                        set = function(_, val) SetBinding(val, "SCREENSHOTER_TAKE") end,
+                        get = function() return GetBindingKey("SCREENSHOTER_TAKE") end
+                    },
+                    take_maximizer = {
+                        order = 4,
+                        name = "Take with Maximizer",
+                        type = "keybinding",
+                        set = function(_, val) SetBinding(val, "SCREENSHOTER_TAKE_MAXIMIZER") end,
+                        get = function() return GetBindingKey("SCREENSHOTER_TAKE_MAXIMIZER") end
+                    },
+                    header2 = {
+                        order = 5,
                         name = "Quality",
                         type = "header"
                     },
                     quality = {
-                        order = 3,
+                        order = 6,
                         name = "Quality",
                         type = "range",
                         min = 0,
@@ -314,7 +336,7 @@ function Screenshoter:LoadConfig()
                         get = function() return tonumber(GetCVar("screenshotQuality")) end
                     },
                     format = {
-                        order = 4,
+                        order = 7,
                         name = "Format",
                         type = "select",
                         values = {"jpg", "tga"},
