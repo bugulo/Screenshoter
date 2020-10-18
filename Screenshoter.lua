@@ -148,8 +148,14 @@ function Screenshoter:Start()
         local result = self.database.watermark.format
         result = string.gsub(result, "{zone}", GetMinimapZoneText())
         result = string.gsub(result, "{char}", UnitName("player"))
-        result = string.gsub(result, "{x}", format("%d", position.x * 100.0))
-        result = string.gsub(result, "{y}", format("%d", position.y * 100.0))
+        
+        if position == nil then
+            result = string.gsub(result, "{x}", "0")
+            result = string.gsub(result, "{y}", "0")
+        else
+            result = string.gsub(result, "{x}", format("%d", position.x * 100.0))
+            result = string.gsub(result, "{y}", format("%d", position.y * 100.0))
+        end
 
         self:RedrawWatermark(result)
         self:ShowWatermark(false)
